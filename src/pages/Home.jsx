@@ -315,8 +315,8 @@ export default function Home() {
           style={{
             backgroundImage: "url('/hero-background2.jpeg')",
             backgroundPosition: '30% center',
-          }}
-        />
+          }}  
+        /> 
         {/* Optional dark overlay if text needs more contrast later — leaving image unobstructed for now */}
 
         <div className="pointer-events-none absolute inset-0 -z-10">
