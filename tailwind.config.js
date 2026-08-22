@@ -195,71 +195,124 @@ export default {
 
       colors: {
         /*
-         * GermanRental Light Purple / Pink Theme
-         * Softened, web-friendly version of a jewel-toned purple-to-pink
-         * reference palette
+         * ==========================================
+         * GERMAN MITRA PRIMARY BLUE
+         * ==========================================
          */
+
+        primary: {
+          50: '#F2F7FC',
+          100: '#E5EFF8',
+          200: '#C7DDED',
+          300: '#9FC1DB',
+          400: '#6D9FC2',
+          500: '#397EAB',
+          600: '#176294',
+          700: '#003B73',
+          800: '#00305E',
+          900: '#002544',
+          950: '#00182D',
+        },
+
+        /*
+         * ==========================================
+         * GERMAN MITRA WARM ORANGE
+         * ==========================================
+         *
+         * Main color: #F59E0B
+         */
+
         brand: {
-          50: '#FCF6FA',
-          100: '#F6E7F1',
-          200: '#EDCEE2',
-          300: '#DFACCF',
-          400: '#CC85B7',
-          500: '#AE5F9C',
-          600: '#8B4680',
-          700: '#6B3564',
-          800: '#4C264A',
-          900: '#331A33',
-          950: '#1F0F20',
+          50: '#FFF9EB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
+          950: '#451A03',
         },
 
         /*
-         * Neutral / text palette
-         * Kept from the original design for readability
+         * ==========================================
+         * BLUE ALIAS
+         * ==========================================
+         *
+         * Use blue-* anywhere you want blue.
          */
+
+        blue: {
+          50: '#F2F7FC',
+          100: '#E5EFF8',
+          200: '#C7DDED',
+          300: '#9FC1DB',
+          400: '#6D9FC2',
+          500: '#397EAB',
+          600: '#176294',
+          700: '#003B73',
+          800: '#00305E',
+          900: '#002544',
+          950: '#00182D',
+        },
+
+        /*
+         * ==========================================
+         * NEUTRAL
+         * ==========================================
+         */
+
         ink: {
-          50: '#f7f8fa',
-          100: '#eef0f4',
-          200: '#dde1e9',
-          300: '#c2c8d4',
-          400: '#9aa3b5',
-          500: '#717c93',
-          600: '#57607a',
-          700: '#454c63',
-          800: '#2f3447',
-          900: '#1c2030',
-          950: '#11131f',
+          50: '#F8FAFC',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#64748B',
+          600: '#475569',
+          700: '#334155',
+          800: '#1E293B',
+          900: '#0F172A',
+          950: '#020617',
         },
 
         /*
-         * Status colors for listing states
-         * Kept separate from brand so they never compete visually
+         * ==========================================
+         * STATUS
+         * ==========================================
          */
+
         status: {
-          available: '#2E8B57',
-          pending: '#E7B10A',
-          taken: '#9AA3B5',
+          available: '#16A34A',
+          pending: '#F59E0B',
+          taken: '#94A3B8',
+          error: '#DC2626',
         },
       },
 
       boxShadow: {
         card:
-          '0 1px 2px rgba(16,24,40,0.04), 0 8px 24px -8px rgba(16,24,40,0.10)',
+          '0 1px 2px rgba(0,59,115,0.04), 0 8px 24px -8px rgba(0,59,115,0.10)',
 
         cardHover:
-          '0 4px 8px rgba(16,24,40,0.06), 0 18px 40px -12px rgba(16,24,40,0.18)',
+          '0 4px 8px rgba(0,59,115,0.06), 0 18px 40px -12px rgba(0,59,115,0.18)',
 
         soft:
-          '0 1px 3px rgba(16,24,40,0.06), 0 1px 2px rgba(16,24,40,0.04)',
+          '0 1px 3px rgba(0,59,115,0.06), 0 1px 2px rgba(0,59,115,0.04)',
 
-        /*
-         * Purple glow for important UI elements
-         */
+        primary:
+          '0 4px 14px rgba(0,59,115,0.18)',
+
+        primaryHover:
+          '0 8px 24px rgba(0,59,115,0.25)',
+
         brand:
-          '0 4px 14px rgba(139,70,128,0.18)',
+          '0 4px 14px rgba(245,158,11,0.20)',
 
         brandHover:
-          '0 8px 24px rgba(139,70,128,0.25)',
+          '0 8px 24px rgba(245,158,11,0.30)',
       },
 
       borderRadius: {
@@ -338,3 +391,8 @@ export default {
 
   plugins: [],
 }
+
+
+
+
+

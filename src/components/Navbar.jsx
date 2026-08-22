@@ -16,9 +16,10 @@ import {
 
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
-import { Logo } from './Logo'
+import germanMitraLogo from '../assets/german-mitra-logo.png'
 import { classNames } from '../utils/format'
 import { GERMAN_CITIES } from '../data/cities'
+import GermanMitraIcon from '../assets/Standaloneicon.png'
 
 export function Navbar() {
   const {
@@ -214,13 +215,25 @@ export function Navbar() {
             LOGO
         ================================================== */}
 
-        <Link
-          to="/"
-          aria-label="GermanMitra home"
-          className="shrink-0"
-        >
-          <Logo />
-        </Link>
+       <Link
+  to="/"
+  aria-label="German Mitra home"
+  className="shrink-0"
+>
+  {/* Desktop: Full German Mitra Logo */}
+  <img
+    src={germanMitraLogo}
+    alt="German Mitra"
+    className="hidden h-14 w-auto object-contain md:block"
+  />
+
+  {/* Mobile: Standalone German Mitra Icon */}
+  <img
+    src={GermanMitraIcon}
+    alt="German Mitra"
+    className="h-10 w-10 object-contain md:hidden"
+  />
+</Link>
 
         {/* ==================================================
             DESKTOP SEARCH
