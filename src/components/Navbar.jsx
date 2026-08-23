@@ -1,3 +1,6 @@
+
+
+
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -97,10 +100,10 @@ export function Navbar() {
   return (
     <header
       className={classNames(
-        'sticky top-0 z-50 w-full border-b transition-all duration-500 ease-smooth',
+        'fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-500 ease-smooth',
         scrolled
-          ? 'border-white/40 bg-white/70 shadow-glass backdrop-blur-xl'
-          : 'border-transparent bg-white/95 backdrop-blur-sm'
+          ? 'border-brand-100/40 bg-gradient-to-b from-white/50 to-brand-50/50 shadow-glass backdrop-blur-xl'
+          : 'border-brand-100/40 bg-gradient-to-b from-white/60 to-brand-50/60 backdrop-blur-xl'
       )}
     >
       <nav className="mx-auto flex min-h-[72px] w-full max-w-[1500px] items-center gap-4 px-5 lg:px-8">
@@ -235,49 +238,49 @@ export function Navbar() {
           )}
         </div>
 
+        {/* Mobile search — inline in navbar row */}
+        <div ref={searchRef} className="relative min-w-0 flex-1 md:hidden">
+          <form onSubmit={handleSearch}>
+            <div className="flex h-11 w-full items-center overflow-hidden rounded-full border border-white/60 bg-white/70 shadow-soft backdrop-blur-sm transition-all duration-300 focus-within:border-brand-300/70">
+              <Search className="ml-3 h-4 w-4 shrink-0 text-ink-400" />
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setLocation(value)
+                  setShowSuggestions(value.trim().length > 0)
+                }}
+                onFocus={() => { if (location.trim()) setShowSuggestions(true) }}
+                placeholder="Search city"
+                aria-label="Search city or location"
+                autoComplete="off"
+                className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-ink-400"
+              />
+              <button
+                type="submit"
+                aria-label="Search"
+                className="mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white shadow-brand transition-all duration-300 ease-spring active:scale-90"
+              >
+                <Search className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </form>
+
+          {showSuggestions && location.trim() && (
+            <SearchSuggestions cities={filteredCities} onSelect={handleSuggestionClick} mobile />
+          )}
+        </div>
+
         <button
           onClick={() => setMobileOpen((open) => !open)}
-          className="ml-auto inline-flex items-center justify-center rounded-full p-2.5 text-ink-800 transition-all duration-300 ease-spring hover:scale-110 hover:bg-brand-50/80 md:hidden"
+          className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full p-2.5 text-ink-800 transition-all duration-300 ease-spring hover:scale-110 hover:bg-brand-50/80 md:hidden"
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
-
-      {/* Mobile search — glass pill */}
-      <div ref={searchRef} className="relative border-t border-white/40 bg-white/60 px-5 pb-3 pt-2 backdrop-blur-md md:hidden">
-        <form onSubmit={handleSearch}>
-          <div className="flex h-11 w-full items-center overflow-hidden rounded-full border border-white/60 bg-white/70 shadow-soft backdrop-blur-sm transition-all duration-300 focus-within:border-brand-300/70">
-            <Search className="ml-4 h-4 w-4 shrink-0 text-ink-400" />
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => {
-                const value = e.target.value
-                setLocation(value)
-                setShowSuggestions(value.trim().length > 0)
-              }}
-              onFocus={() => { if (location.trim()) setShowSuggestions(true) }}
-              placeholder="Search city or location"
-              aria-label="Search city or location"
-              autoComplete="off"
-              className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-ink-400"
-            />
-            <button
-              type="submit"
-              aria-label="Search"
-              className="mr-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white shadow-brand transition-all duration-300 ease-spring active:scale-90"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          </div>
-        </form>
-
-        {showSuggestions && location.trim() && (
-          <SearchSuggestions cities={filteredCities} onSelect={handleSuggestionClick} mobile />
-        )}
-      </div>
 
       {/* Mobile menu — glass panel */}
       {mobileOpen && (
