@@ -45,7 +45,7 @@ export function FilterBar({
   }
 
   return (
-    <div className="relative z-[100]">
+    <div className="relative z-30">
       {/* =====================================================
           HORIZONTAL FILTER ROW
       ====================================================== */}

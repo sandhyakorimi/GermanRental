@@ -1,11 +1,11 @@
 import {
   Circle,
-  CircleMarker,
   MapContainer,
   Popup,
   TileLayer,
   useMap,
   useMapEvents,
+  Marker,
 } from 'react-leaflet'
 import { useEffect } from 'react'
 import L from 'leaflet'
@@ -13,12 +13,86 @@ import L from 'leaflet'
 const GERMANY_CENTER = [51.1657, 10.4515]
 const DEFAULT_ZOOM = 6
 
-/*
- * Handles clicks on empty map areas.
- *
- * Clicking a property marker is handled separately and
- * should NOT select a nearby map location.
- */
+const HOME_ICON = L.divIcon({
+  className: 'property-home-marker',
+  html: `
+    <div
+      style="
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #003B73;
+        border: 3px solid white;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+      "
+    >
+      <svg
+        width="21"
+        height="21"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style="transform: rotate(45deg)"
+      >
+        <path
+          d="M3 10.5L12 3L21 10.5V21H15V15H9V21H3V10.5Z"
+          fill="#F59E0B"
+          stroke="white"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+  `,
+  iconSize: [42, 42],
+  iconAnchor: [21, 42],
+  popupAnchor: [0, -42],
+})
+
+const SELECTED_ICON = L.divIcon({
+  className: 'selected-home-marker',
+  html: `
+    <div
+      style="
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F59E0B;
+        border: 3px solid #003B73;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        box-shadow: 0 5px 14px rgba(0,59,115,0.3);
+      "
+    >
+      <svg
+        width="23"
+        height="23"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style="transform: rotate(45deg)"
+      >
+        <path
+          d="M3 10.5L12 3L21 10.5V21H15V15H9V21H3V10.5Z"
+          fill="#003B73"
+          stroke="white"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+  `,
+  iconSize: [46, 46],
+  iconAnchor: [23, 46],
+  popupAnchor: [0, -46],
+})
+
 function MapEvents({ onLocationSelect }) {
   useMapEvents({
     click(event) {
@@ -32,37 +106,23 @@ function MapEvents({ onLocationSelect }) {
   return null
 }
 
-/*
- * Fit the map around the properties currently shown
- * on the map.
- */
 function FitMapToProperties({ properties }) {
   const map = useMap()
 
   useEffect(() => {
-    const validProperties = properties.filter(
-      (property) => {
-        const coordinates = property.coordinates
+    const validProperties = properties.filter((property) => {
+      if (!property.coordinates) return false
 
-        if (!coordinates) {
-          return false
-        }
+      const lat = Number(property.coordinates.lat)
+      const lng = Number(property.coordinates.lng)
 
-        const lat = Number(coordinates.lat)
-        const lng = Number(coordinates.lng)
+      return (
+        Number.isFinite(lat) &&
+        Number.isFinite(lng)
+      )
+    })
 
-        return (
-          Number.isFinite(lat) &&
-          Number.isFinite(lng)
-        )
-      },
-    )
-
-    /*
-     * No valid properties:
-     * show Germany.
-     */
-    if (validProperties.length === 0) {
+    if (!validProperties.length) {
       map.setView(
         GERMANY_CENTER,
         DEFAULT_ZOOM,
@@ -70,9 +130,6 @@ function FitMapToProperties({ properties }) {
       return
     }
 
-    /*
-     * Only one property.
-     */
     if (validProperties.length === 1) {
       const property = validProperties[0]
 
@@ -81,16 +138,15 @@ function FitMapToProperties({ properties }) {
           Number(property.coordinates.lat),
           Number(property.coordinates.lng),
         ],
-        13,
+        14,
+        {
+          animate: true,
+        },
       )
 
       return
     }
 
-    /*
-     * Multiple properties:
-     * fit all markers.
-     */
     const bounds = L.latLngBounds(
       validProperties.map((property) => [
         Number(property.coordinates.lat),
@@ -99,8 +155,9 @@ function FitMapToProperties({ properties }) {
     )
 
     map.fitBounds(bounds, {
-      padding: [40, 40],
-      maxZoom: 13,
+      padding: [60, 60],
+      maxZoom: 14,
+      animate: true,
     })
   }, [map, properties])
 
@@ -114,44 +171,28 @@ export function PropertyMap({
   radiusKm = 2,
 }) {
   return (
-    <div
-      className="
-        h-full
-        min-h-[500px]
-        overflow-hidden
-        rounded-2xl
-        border
-        border-ink-200
-        bg-ink-100
-        shadow-soft
-      "
-    >
+    <div className="h-full min-h-[560px] overflow-hidden rounded-2xl border border-ink-200 bg-ink-100 shadow-card">
       <MapContainer
         center={GERMANY_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        className="h-full min-h-[500px] w-full"
+        zoomControl={true}
+        className="h-full min-h-[560px] w-full"
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Fit map around current properties */}
         <FitMapToProperties
           properties={properties}
         />
 
-        {/* Empty map click handler */}
         <MapEvents
-          onLocationSelect={
-            onLocationSelect
-          }
+          onLocationSelect={onLocationSelect}
         />
 
-        {/* =================================================
-            PROPERTY MARKERS
-        ================================================== */}
+        {/* PROPERTY HOME MARKERS */}
 
         {properties.map((property) => {
           if (!property.coordinates) {
@@ -174,28 +215,18 @@ export function PropertyMap({
           }
 
           return (
-            <CircleMarker
+            <Marker
               key={property.id}
-              center={[lat, lng]}
-              radius={8}
-              pathOptions={{
-                color: '#003B73',
-                fillColor: '#F59E0B',
-                fillOpacity: 1,
-                weight: 3,
-              }}
+              position={[lat, lng]}
+              icon={HOME_ICON}
               eventHandlers={{
                 click: (event) => {
-                  /*
-                   * Prevent the marker click from
-                   * becoming a map-location click.
-                   */
                   event.originalEvent.stopPropagation()
                 },
               }}
             >
               <Popup>
-                <div className="min-w-[190px]">
+                <div className="min-w-[220px]">
                   <p className="font-bold text-ink-900">
                     {property.title}
                   </p>
@@ -213,32 +244,22 @@ export function PropertyMap({
                   </p>
                 </div>
               </Popup>
-            </CircleMarker>
+            </Marker>
           )
         })}
 
-        {/* =================================================
-            SELECTED MAP LOCATION
-        ================================================== */}
+        {/* SELECTED LOCATION */}
 
         {selectedLocation && (
           <>
-            {/* Selected point */}
-            <CircleMarker
-              center={[
+            <Marker
+              position={[
                 selectedLocation.lat,
                 selectedLocation.lng,
               ]}
-              radius={7}
-              pathOptions={{
-                color: '#003B73',
-                fillColor: '#003B73',
-                fillOpacity: 1,
-                weight: 3,
-              }}
+              icon={SELECTED_ICON}
             />
 
-            {/* Radius */}
             <Circle
               center={[
                 selectedLocation.lat,

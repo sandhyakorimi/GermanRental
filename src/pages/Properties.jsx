@@ -1,698 +1,12 @@
-// import { useEffect, useMemo, useState } from 'react'
-// import { useSearchParams } from 'react-router-dom'
-// import {
-//   SlidersHorizontal,
-//   ArrowUpDown,
-//   Grid2x2,
-//   LayoutGrid,
-//   Search,
-//   X,
-// } from 'lucide-react'
-
-// import { PropertyCard } from '../components/PropertyCard'
-// import { FilterBar } from '../components/FilterBar'
-// import {
-//   EmptyState,
-//   SkeletonCard,
-//   DisclaimerBanner,
-// } from '../components/ui'
-// import { useListings } from '../context/ListingsContext'
-// import { classNames } from '../utils/format'
-
-// const SORT_OPTIONS = [
-//   { value: 'newest', label: 'Newest first' },
-//   { value: 'price-asc', label: 'Price: low to high' },
-//   { value: 'price-desc', label: 'Price: high to low' },
-//   { value: 'area-desc', label: 'Largest area' },
-// ]
-
-// const emptyFilters = {
-//   city: '',
-//   type: '',
-//   maxRent: '',
-//   bedrooms: '',
-//   furnished: '',
-//   amenities: [],
-//   q: '',
-// }
-
-// export default function Properties() {
-//   const { listings } = useListings()
-//   const [params, setParams] = useSearchParams()
-
-//   const [loading, setLoading] = useState(true)
-//   const [sort, setSort] = useState('newest')
-//   const [density, setDensity] = useState('comfortable')
-//   const [mobileFilters, setMobileFilters] = useState(false)
-
-//   /*
-//    * CITY COMES DIRECTLY FROM THE URL.
-//    *
-//    * Navbar:
-//    * /properties?city=Frankfurt
-//    *
-//    * Therefore:
-//    * city = Frankfurt
-//    *
-//    * We do NOT use an effect to copy this into state.
-//    */
-//   const selectedCity = params.get('city') || ''
-
-//   /*
-//    * Other filters remain local state.
-//    */
-//   const [filters, setFilters] = useState(() => ({
-//     ...emptyFilters,
-//     type: params.get('type') || '',
-//     maxRent: params.get('maxRent') || '',
-//     q: params.get('q') || '',
-//   }))
-
-//   // -------------------------------------------------------
-//   // LOADING
-//   // -------------------------------------------------------
-
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       setLoading(false)
-//     }, 350)
-
-//     return () => clearTimeout(timer)
-//   }, [])
-
-//   // -------------------------------------------------------
-//   // UPDATE NON-CITY URL FILTERS
-//   //
-//   // City is NOT handled here.
-//   // City belongs to the URL directly.
-//   // -------------------------------------------------------
-
-//   useEffect(() => {
-//     const next = new URLSearchParams(params)
-
-//     if (filters.type) {
-//       next.set('type', filters.type)
-//     } else {
-//       next.delete('type')
-//     }
-
-//     if (filters.maxRent) {
-//       next.set('maxRent', filters.maxRent)
-//     } else {
-//       next.delete('maxRent')
-//     }
-
-//     if (filters.q) {
-//       next.set('q', filters.q)
-//     } else {
-//       next.delete('q')
-//     }
-
-//     const current = params.toString()
-//     const updated = next.toString()
-
-//     if (current !== updated) {
-//       setParams(next, { replace: true })
-//     }
-//   }, [
-//     filters.type,
-//     filters.maxRent,
-//     filters.q,
-//     setParams,
-//   ])
-
-//   // -------------------------------------------------------
-//   // FILTER PROPERTIES
-//   // -------------------------------------------------------
-
-//   const filtered = useMemo(() => {
-//     let list = listings.filter(
-//       (p) => p.status === 'approved'
-//     )
-
-//     /*
-//      * CITY FILTER
-//      *
-//      * This works for EVERY city.
-//      *
-//      * Berlin     -> Berlin
-//      * Frankfurt  -> Frankfurt
-//      * Hamburg    -> Hamburg
-//      * Munich     -> Munich
-//      * etc.
-//      */
-//     if (selectedCity) {
-//       const city = selectedCity
-//         .trim()
-//         .toLowerCase()
-
-//       list = list.filter((p) => {
-//         if (!p.city) return false
-
-//         return (
-//           p.city.trim().toLowerCase() === city
-//         )
-//       })
-//     }
-
-//     // PROPERTY TYPE
-//     if (filters.type) {
-//       list = list.filter(
-//         (p) => p.type === filters.type
-//       )
-//     }
-
-//     // MAX RENT
-//     if (filters.maxRent) {
-//       list = list.filter(
-//         (p) =>
-//           p.rent <= Number(filters.maxRent)
-//       )
-//     }
-
-//     // BEDROOMS
-//     if (filters.bedrooms) {
-//       list = list.filter(
-//         (p) =>
-//           p.bedrooms >= Number(filters.bedrooms)
-//       )
-//     }
-
-//     // FURNISHED
-//     if (filters.furnished === 'yes') {
-//       list = list.filter(
-//         (p) => p.furnished
-//       )
-//     }
-
-//     if (filters.furnished === 'no') {
-//       list = list.filter(
-//         (p) => !p.furnished
-//       )
-//     }
-
-//     // AMENITIES
-//     if (filters.amenities.length) {
-//       list = list.filter(
-//         (p) =>
-//           p.amenities &&
-//           filters.amenities.every((a) =>
-//             p.amenities.includes(a)
-//           )
-//       )
-//     }
-
-//     // SEARCH
-//     if (filters.q) {
-//       const q = filters.q
-//         .trim()
-//         .toLowerCase()
-
-//       list = list.filter((p) => {
-//         const title =
-//           p.title?.toLowerCase() || ''
-
-//         const city =
-//           p.city?.toLowerCase() || ''
-
-//         const district =
-//           p.district?.toLowerCase() || ''
-
-//         const type =
-//           p.type?.toLowerCase() || ''
-
-//         return (
-//           title.includes(q) ||
-//           city.includes(q) ||
-//           district.includes(q) ||
-//           type.includes(q)
-//         )
-//       })
-//     }
-
-//     // SORT
-//     switch (sort) {
-//       case 'price-asc':
-//         return [...list].sort(
-//           (a, b) => a.rent - b.rent
-//         )
-
-//       case 'price-desc':
-//         return [...list].sort(
-//           (a, b) => b.rent - a.rent
-//         )
-
-//       case 'area-desc':
-//         return [...list].sort(
-//           (a, b) => b.area - a.area
-//         )
-
-//       case 'newest':
-//       default:
-//         return [...list].sort(
-//           (a, b) =>
-//             new Date(b.createdAt) -
-//             new Date(a.createdAt)
-//         )
-//     }
-//   }, [
-//     listings,
-//     selectedCity,
-//     filters,
-//     sort,
-//   ])
-
-//   // -------------------------------------------------------
-//   // ACTIVE FILTER COUNT
-//   // -------------------------------------------------------
-
-//   const activeCount = [
-//     selectedCity,
-//     filters.type,
-//     filters.bedrooms,
-//     filters.furnished,
-//     filters.q,
-//     filters.maxRent ? 'rent' : '',
-//     filters.amenities.length
-//       ? 'amenities'
-//       : '',
-//   ].filter(Boolean).length
-
-//   // -------------------------------------------------------
-//   // RESET FILTERS
-//   // -------------------------------------------------------
-
-//   const resetFilters = () => {
-//     setFilters({
-//       ...emptyFilters,
-//     })
-
-//     // Remove city and other URL filters
-//     setParams({}, { replace: true })
-//   }
-
-//   // -------------------------------------------------------
-//   // FILTER PANEL CHANGE
-//   // -------------------------------------------------------
-
-//   const handleFilterChange = (nextFilters) => {
-//     /*
-//      * If the CITY dropdown inside FilterPanel changes,
-//      * update the URL directly.
-//      */
-
-//     if (nextFilters.city !== selectedCity) {
-//       const nextParams = new URLSearchParams(params)
-
-//       if (nextFilters.city) {
-//         nextParams.set(
-//           'city',
-//           nextFilters.city
-//         )
-//       } else {
-//         nextParams.delete('city')
-//       }
-
-//       setParams(nextParams, {
-//         replace: true,
-//       })
-//     }
-
-//     /*
-//      * Keep all the other existing filters.
-//      *
-//      * We don't store city in local state because
-//      * selectedCity comes directly from the URL.
-//      */
-//     setFilters({
-//       ...nextFilters,
-//       city: selectedCity,
-//     })
-//   }
-
-//   return (
-//     <div className="container-page py-8 lg:py-10">
-
-//       {/* HEADER */}
-
-//       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-
-//         <div>
-//           <h1 className="text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
-//             Browse properties
-//           </h1>
-
-//           <p className="mt-2 text-sm text-ink-600">
-//             {filtered.length}{' '}
-//             {filtered.length === 1
-//               ? 'home'
-//               : 'homes'}{' '}
-//             across Germany
-
-//             {selectedCity && (
-//               <>
-//                 {' '}in{' '}
-//                 <strong>
-//                   {selectedCity}
-//                 </strong>
-//               </>
-//             )}
-//           </p>
-//         </div>
-
-//         <div className="flex items-center gap-2">
-
-//           {/* DESKTOP SEARCH */}
-
-//           <div className="relative hidden sm:block">
-
-//             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-
-//             <input
-//               value={filters.q}
-//               onChange={(e) =>
-//                 setFilters((f) => ({
-//                   ...f,
-//                   q: e.target.value,
-//                 }))
-//               }
-//               placeholder="Search title, city, district…"
-//               className="input pl-9"
-//             />
-
-//           </div>
-
-//           {/* MOBILE FILTER BUTTON */}
-
-//           <button
-//             onClick={() =>
-//               setMobileFilters(true)
-//             }
-//             className="btn-secondary lg:hidden"
-//           >
-//             <SlidersHorizontal className="h-4 w-4" />
-
-//             Filters
-
-//             {activeCount > 0 && (
-//               <span className="ml-1 rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white">
-//                 {activeCount}
-//               </span>
-//             )}
-//           </button>
-
-//         </div>
-//       </div>
-
-//       {/* MOBILE SEARCH */}
-
-//       <div className="relative mt-4 sm:hidden">
-
-//         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-
-//         <input
-//           value={filters.q}
-//           onChange={(e) =>
-//             setFilters((f) => ({
-//               ...f,
-//               q: e.target.value,
-//             }))
-//           }
-//           placeholder="Search title, city, district…"
-//           className="input pl-9"
-//         />
-
-//       </div>
-
-//       {/* MAIN */}
-
-//       <div className="mt-6 flex gap-8">
-
-//         {/* FILTER PANEL */}
-
-//         <FilterPanel
-//           filters={{
-//             ...filters,
-//             city: selectedCity,
-//           }}
-//           onChange={handleFilterChange}
-//           onReset={resetFilters}
-//           resultCount={filtered.length}
-//           mobileOpen={mobileFilters}
-//           onMobileClose={() =>
-//             setMobileFilters(false)
-//           }
-//         />
-
-//         {/* RESULTS */}
-
-//         <div className="min-w-0 flex-1">
-
-//           {/* TOP BAR */}
-
-//           <div className="mb-4 flex items-center justify-between gap-3">
-
-//             <div className="flex flex-wrap items-center gap-2">
-
-//               {activeCount > 0 && (
-//                 <button
-//                   onClick={resetFilters}
-//                   className="inline-flex items-center gap-1 rounded-full bg-ink-100 px-3 py-1 text-xs font-medium text-ink-600 transition hover:bg-ink-200"
-//                 >
-//                   Clear all
-
-//                   <X className="h-3 w-3" />
-//                 </button>
-//               )}
-
-//               {/* CITY PILL */}
-
-//               {selectedCity && (
-//                 <Pill
-//                   label={selectedCity}
-//                   onClear={() => {
-//                     const nextParams =
-//                       new URLSearchParams(
-//                         params
-//                       )
-
-//                     nextParams.delete('city')
-
-//                     setParams(
-//                       nextParams,
-//                       { replace: true }
-//                     )
-//                   }}
-//                 />
-//               )}
-
-//               {/* TYPE PILL */}
-
-//               {filters.type && (
-//                 <Pill
-//                   label={filters.type}
-//                   onClear={() =>
-//                     setFilters((f) => ({
-//                       ...f,
-//                       type: '',
-//                     }))
-//                   }
-//                 />
-//               )}
-
-//               {/* FURNISHED PILL */}
-
-//               {filters.furnished === 'yes' && (
-//                 <Pill
-//                   label="Furnished"
-//                   onClear={() =>
-//                     setFilters((f) => ({
-//                       ...f,
-//                       furnished: '',
-//                     }))
-//                   }
-//                 />
-//               )}
-
-//               {filters.furnished === 'no' && (
-//                 <Pill
-//                   label="Unfurnished"
-//                   onClear={() =>
-//                     setFilters((f) => ({
-//                       ...f,
-//                       furnished: '',
-//                     }))
-//                   }
-//                 />
-//               )}
-
-//             </div>
-
-//             {/* SORT */}
-
-//             <div className="flex items-center gap-2">
-
-//               {/* DENSITY */}
-
-//               <div className="hidden items-center gap-1 rounded-xl ring-1 ring-ink-200 sm:flex">
-
-//                 <button
-//                   onClick={() =>
-//                     setDensity(
-//                       'comfortable'
-//                     )
-//                   }
-//                   className={classNames(
-//                     'rounded-lg p-2 transition',
-//                     density === 'comfortable'
-//                       ? 'bg-ink-100 text-ink-900'
-//                       : 'text-ink-400 hover:text-ink-700'
-//                   )}
-//                   aria-label="Comfortable grid"
-//                 >
-//                   <Grid2x2 className="h-4 w-4" />
-//                 </button>
-
-//                 <button
-//                   onClick={() =>
-//                     setDensity('compact')
-//                   }
-//                   className={classNames(
-//                     'rounded-lg p-2 transition',
-//                     density === 'compact'
-//                       ? 'bg-ink-100 text-ink-900'
-//                       : 'text-ink-400 hover:text-ink-700'
-//                   )}
-//                   aria-label="Compact grid"
-//                 >
-//                   <LayoutGrid className="h-4 w-4" />
-//                 </button>
-
-//               </div>
-
-//               {/* SORT */}
-
-//               <label className="relative">
-
-//                 <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-
-//                 <select
-//                   value={sort}
-//                   onChange={(e) =>
-//                     setSort(e.target.value)
-//                   }
-//                   className="input appearance-none pl-9 pr-8"
-//                 >
-//                   {SORT_OPTIONS.map((o) => (
-//                     <option
-//                       key={o.value}
-//                       value={o.value}
-//                     >
-//                       {o.label}
-//                     </option>
-//                   ))}
-//                 </select>
-
-//               </label>
-
-//             </div>
-//           </div>
-
-//           {/* RESULTS */}
-
-//           {loading ? (
-//             <div
-//               className={classNames(
-//                 'grid gap-6',
-//                 density === 'compact'
-//                   ? 'sm:grid-cols-2 lg:grid-cols-4'
-//                   : 'sm:grid-cols-2 lg:grid-cols-3'
-//               )}
-//             >
-//               {Array.from({
-//                 length: 6,
-//               }).map((_, i) => (
-//                 <SkeletonCard key={i} />
-//               ))}
-//             </div>
-//           ) : filtered.length === 0 ? (
-//             <EmptyState
-//               icon={
-//                 <Search className="h-7 w-7" />
-//               }
-//               title="No properties match your filters"
-//               description="Try widening your search — remove a filter or increase the maximum rent."
-//               action={
-//                 <button
-//                   onClick={resetFilters}
-//                   className="btn-primary"
-//                 >
-//                   Reset filters
-//                 </button>
-//               }
-//             />
-//           ) : (
-//             <div
-//               className={classNames(
-//                 'grid gap-6',
-//                 density === 'compact'
-//                   ? 'sm:grid-cols-2 lg:grid-cols-4'
-//                   : 'sm:grid-cols-2 lg:grid-cols-3'
-//               )}
-//             >
-//               {filtered.map((p, i) => (
-//                 <PropertyCard
-//                   key={p.id}
-//                   property={p}
-//                   index={i}
-//                 />
-//               ))}
-//             </div>
-//           )}
-
-//           <div className="mt-8">
-//             <DisclaimerBanner />
-//           </div>
-
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// function Pill({ label, onClear }) {
-//   return (
-//     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
-//       {label}
-
-//       <button
-//         onClick={onClear}
-//         className="rounded-full hover:text-brand-900"
-//         aria-label={`Remove ${label}`}
-//       >
-//         <X className="h-3 w-3" />
-//       </button>
-
-//     </span>
-//   )
-// }
-
-
-
-
-
-
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
-  Grid2x2,
-  LayoutGrid,
-  Search,
-  X,
   Map as MapIcon,
   List as ListIcon,
   MapPin,
+  Search,
+  X,
 } from 'lucide-react'
 
 import { PropertyCard } from '../components/PropertyCard'
@@ -745,26 +59,31 @@ export default function Properties() {
 
   const [loading, setLoading] = useState(true)
   const [sort, setSort] = useState('newest')
-  const [density, setDensity] = useState('comfortable')
 
-  // Map state
+  /*
+   * Desktop:
+   * Map is always visible on the right.
+   *
+   * Mobile:
+   * mapOpen switches between property list and map.
+   */
   const [mapOpen, setMapOpen] = useState(false)
   const [mapLocation, setMapLocation] = useState(null)
 
   /*
    * =========================================================
    * CITY FROM URL
+   * =========================================================
    *
    * /properties?city=Berlin
    * /properties?city=Frankfurt
    * /properties?city=Munich
-   * =========================================================
    */
   const selectedCity = params.get('city') || ''
 
   /*
    * =========================================================
-   * OTHER FILTERS
+   * FILTER STATE
    * =========================================================
    */
   const [filters, setFilters] = useState(() => ({
@@ -781,7 +100,7 @@ export default function Properties() {
 
   /*
    * =========================================================
-   * LOADING
+   * INITIAL LOADING
    * =========================================================
    */
   useEffect(() => {
@@ -868,7 +187,7 @@ export default function Properties() {
    */
   const handleFilterChange = (nextFilters) => {
     /*
-     * Update city in URL
+     * City is stored in the URL.
      */
     if (nextFilters.city !== selectedCity) {
       const nextParams = new URLSearchParams(params)
@@ -888,7 +207,7 @@ export default function Properties() {
     }
 
     /*
-     * Update local filters
+     * Store all filters locally.
      */
     setFilters({
       ...nextFilters,
@@ -896,10 +215,8 @@ export default function Properties() {
     })
 
     /*
-     * Clear map selection when the user
-     * changes normal filters.
-     *
-     * This keeps the behavior predictable.
+     * Changing normal filters clears
+     * a selected map location.
      */
     setMapLocation(null)
   }
@@ -907,9 +224,10 @@ export default function Properties() {
   /*
    * =========================================================
    * BASE FILTERING
-   *
-   * Everything except map filtering.
    * =========================================================
+   *
+   * These are the normal filters.
+   * Map filtering is applied afterwards.
    */
   const baseFiltered = useMemo(() => {
     let list = listings.filter(
@@ -928,8 +246,7 @@ export default function Properties() {
         if (!p.city) return false
 
         return (
-          p.city.trim().toLowerCase() ===
-          city
+          p.city.trim().toLowerCase() === city
         )
       })
     }
@@ -949,8 +266,7 @@ export default function Properties() {
     if (filters.maxRent) {
       list = list.filter(
         (p) =>
-          p.rent <=
-          Number(filters.maxRent),
+          p.rent <= Number(filters.maxRent),
       )
     }
 
@@ -992,15 +308,16 @@ export default function Properties() {
 
         return filters.amenities.every(
           (amenity) =>
-            p.amenities.includes(
-              amenity,
-            ),
+            p.amenities.includes(amenity),
         )
       })
     }
 
     /*
      * TEXT SEARCH
+     *
+     * Kept so your existing search/URL
+     * behavior still works.
      */
     if (filters.q) {
       const q = filters.q
@@ -1015,8 +332,7 @@ export default function Properties() {
           p.city?.toLowerCase() || ''
 
         const district =
-          p.district?.toLowerCase() ||
-          ''
+          p.district?.toLowerCase() || ''
 
         const type =
           p.type?.toLowerCase() || ''
@@ -1040,10 +356,13 @@ export default function Properties() {
   /*
    * =========================================================
    * FINAL FILTERING
-   *
-   * Adds map radius filtering on top of all
-   * the normal filters.
    * =========================================================
+   *
+   * Normal filters
+   *       ↓
+   * Map radius
+   *       ↓
+   * Sort
    */
   const filtered = useMemo(() => {
     let list = [...baseFiltered]
@@ -1079,9 +398,7 @@ export default function Properties() {
           lng,
         )
 
-        return (
-          distance <= MAP_RADIUS_KM
-        )
+        return distance <= MAP_RADIUS_KM
       })
     }
 
@@ -1120,25 +437,6 @@ export default function Properties() {
 
   /*
    * =========================================================
-   * ACTIVE FILTER COUNT
-   * =========================================================
-   */
-  const activeCount = [
-    selectedCity,
-    filters.type,
-    filters.bedrooms,
-    filters.furnished,
-    filters.q,
-    filters.maxRent
-      ? 'rent'
-      : '',
-    filters.amenities?.length
-      ? 'amenities'
-      : '',
-  ].filter(Boolean).length
-
-  /*
-   * =========================================================
    * RESET FILTERS
    * =========================================================
    */
@@ -1159,58 +457,49 @@ export default function Properties() {
 
   /*
    * =========================================================
-   * MAP LOCATION SELECTED
+   * MAP LOCATION
    * =========================================================
    */
-  const handleMapLocation = (
-    location,
-  ) => {
+  const handleMapLocation = (location) => {
     setMapLocation(location)
   }
 
-  /*
-   * =========================================================
-   * CLEAR MAP LOCATION
-   * =========================================================
-   */
   const clearMapLocation = () => {
     setMapLocation(null)
   }
 
   return (
-    <div className="container-page py-6 lg:py-8">
+    <div className="container-page py-4 sm:py-6 lg:py-8">
 
       {/* =====================================================
           TOP FILTER BAR
       ====================================================== */}
 
-      <div className="mb-5">
+      <div className="mb-4 lg:mb-5">
         <FilterBar
           filters={{
             ...filters,
             city: selectedCity,
           }}
-          onChange={
-            handleFilterChange
-          }
-          resultCount={
-            filtered.length
-          }
+          onChange={handleFilterChange}
+          resultCount={filtered.length}
         />
       </div>
 
       {/* =====================================================
-          HEADER
+          HEADER + SORT + MAP
       ====================================================== */}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-2 flex items-center justify-between gap-3">
 
-        <div>
+        {/* TITLE */}
+
+        <div className="min-w-0">
           <h1 className="text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">
             Browse properties
           </h1>
 
-          <p className="mt-2 text-sm text-ink-600">
+          <p className="mt-1 text-sm text-ink-600">
             {filtered.length}{' '}
             {filtered.length === 1
               ? 'home'
@@ -1220,25 +509,250 @@ export default function Properties() {
             {selectedCity && (
               <>
                 {' '}in{' '}
-                <strong>
+                <strong className="font-semibold text-ink-900">
                   {selectedCity}
                 </strong>
-              </>
-            )}
-
-            {mapLocation && (
-              <>
-                {' '}near selected map location
               </>
             )}
           </p>
         </div>
 
-        {/* DESKTOP SEARCH */}
+        {/* ===================================================
+            DESKTOP SORT + MAP
+        ==================================================== */}
 
-        <div className="relative hidden sm:block">
+        <div className="hidden shrink-0 items-center gap-2 sm:flex">
 
-          <Search
+          {/* NEWEST FIRST */}
+
+          <label className="relative">
+            <ArrowUpDown
+              className="
+                pointer-events-none
+                absolute
+                left-3
+                top-1/2
+                h-4 w-4
+                -translate-y-1/2
+                text-ink-400
+              "
+            />
+
+            <select
+              value={sort}
+              onChange={(e) =>
+                setSort(e.target.value)
+              }
+              className="
+                input
+                h-11
+                w-[165px]
+                appearance-none
+                pl-9
+                pr-8
+                text-sm
+              "
+            >
+              {SORT_OPTIONS.map(
+                (option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+          {/* MAP */}
+
+          <div
+            className="
+              inline-flex
+              h-11
+              items-center
+              gap-2
+              rounded-full
+              border
+              border-ink-200
+              bg-white
+              px-4
+              text-sm
+              font-bold
+              text-ink-700
+            "
+          >
+            <MapIcon className="h-4 w-4 text-brand-700" />
+            Map
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================
+          ACTIVE FILTER PILLS
+      ====================================================== */}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+
+        {selectedCity && (
+          <Pill
+            label={selectedCity}
+            onClear={() => {
+              const nextParams =
+                new URLSearchParams(params)
+
+              nextParams.delete('city')
+
+              setParams(
+                nextParams,
+                {
+                  replace: true,
+                },
+              )
+
+              setMapLocation(null)
+            }}
+          />
+        )}
+
+        {filters.type && (
+          <Pill
+            label={filters.type}
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  type: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {filters.maxRent && (
+          <Pill
+            label={`Max €${filters.maxRent}`}
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  maxRent: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {filters.bedrooms && (
+          <Pill
+            label={`${filters.bedrooms}+ bedrooms`}
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  bedrooms: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {filters.furnished === 'yes' && (
+          <Pill
+            label="Furnished"
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  furnished: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {filters.furnished === 'no' && (
+          <Pill
+            label="Unfurnished"
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  furnished: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {filters.amenities?.map(
+          (amenity) => (
+            <Pill
+              key={amenity}
+              label={amenity}
+              onClear={() =>
+                setFilters(
+                  (current) => ({
+                    ...current,
+                    amenities:
+                      current.amenities.filter(
+                        (a) =>
+                          a !== amenity,
+                      ),
+                  }),
+                )
+              }
+            />
+          ),
+        )}
+
+        {filters.q && (
+          <Pill
+            label={`Search: ${filters.q}`}
+            onClear={() =>
+              setFilters(
+                (current) => ({
+                  ...current,
+                  q: '',
+                }),
+              )
+            }
+          />
+        )}
+
+        {mapLocation && (
+          <button
+            type="button"
+            onClick={clearMapLocation}
+            className="
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-full
+              bg-brand-50
+              px-3
+              py-1
+              text-xs
+              font-semibold
+              text-brand-700
+            "
+          >
+            <MapPin className="h-3 w-3" />
+            Nearby location
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {/* =====================================================
+          MOBILE SORT
+      ====================================================== */}
+
+      <div className="mt-3 flex justify-end sm:hidden">
+        <label className="relative">
+          <ArrowUpDown
             className="
               pointer-events-none
               absolute
@@ -1250,364 +764,33 @@ export default function Properties() {
             "
           />
 
-          <input
-            value={filters.q}
+          <select
+            value={sort}
             onChange={(e) =>
-              setFilters((current) => ({
-                ...current,
-                q: e.target.value,
-              }))
+              setSort(e.target.value)
             }
-            placeholder="Search title, city, district…"
-            className="input pl-9"
-          />
-
-        </div>
-      </div>
-
-      {/* =====================================================
-          MOBILE SEARCH
-      ====================================================== */}
-
-      <div className="relative mt-4 sm:hidden">
-
-        <Search
-          className="
-            pointer-events-none
-            absolute
-            left-3
-            top-1/2
-            h-4 w-4
-            -translate-y-1/2
-            text-ink-400
-          "
-        />
-
-        <input
-          value={filters.q}
-          onChange={(e) =>
-            setFilters((current) => ({
-              ...current,
-              q: e.target.value,
-            }))
-          }
-          placeholder="Search title, city, district…"
-          className="input pl-9"
-        />
-
-      </div>
-
-      {/* =====================================================
-          MAP / LIST BUTTON
-      ====================================================== */}
-
-      <div className="mt-5 flex items-center justify-between gap-3">
-
-        {/* MAP LOCATION PILL */}
-
-        <div className="min-w-0 flex-1">
-
-          {mapLocation && (
-            <button
-              type="button"
-              onClick={
-                clearMapLocation
-              }
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-full
-                bg-brand-50
-                px-3
-                py-1.5
-                text-xs
-                font-semibold
-                text-brand-700
-              "
-            >
-              <MapPin className="h-3.5 w-3.5" />
-
-              Nearby location
-
-              <X className="h-3 w-3" />
-            </button>
-          )}
-
-        </div>
-
-        {/* DESKTOP MAP BUTTON */}
-
-        <button
-          type="button"
-          onClick={() =>
-            setMapOpen(
-              (open) => !open,
-            )
-          }
-          className={classNames(
-            'hidden shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition lg:inline-flex',
-            mapOpen
-              ? 'bg-brand-700 text-white shadow-soft'
-              : 'border border-ink-200 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50',
-          )}
-        >
-          {mapOpen ? (
-            <ListIcon className="h-4 w-4" />
-          ) : (
-            <MapIcon className="h-4 w-4" />
-          )}
-
-          {mapOpen
-            ? 'Show list'
-            : 'Map'}
-        </button>
-
-      </div>
-
-      {/* =====================================================
-          ACTIVE FILTER PILLS + SORT
-      ====================================================== */}
-
-      <div className="mt-4">
-
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-
-          {/* ACTIVE PILLS */}
-
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-
-            {selectedCity && (
-              <Pill
-                label={selectedCity}
-                onClear={() => {
-                  const nextParams =
-                    new URLSearchParams(
-                      params,
-                    )
-
-                  nextParams.delete(
-                    'city',
-                  )
-
-                  setParams(
-                    nextParams,
-                    {
-                      replace: true,
-                    },
-                  )
-                }}
-              />
-            )}
-
-            {filters.type && (
-              <Pill
-                label={filters.type}
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      type: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-            {filters.maxRent && (
-              <Pill
-                label={`Max €${filters.maxRent}`}
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      maxRent: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-            {filters.bedrooms && (
-              <Pill
-                label={`${filters.bedrooms}+ bedrooms`}
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      bedrooms: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-            {filters.furnished ===
-              'yes' && (
-              <Pill
-                label="Furnished"
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      furnished: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-            {filters.furnished ===
-              'no' && (
-              <Pill
-                label="Unfurnished"
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      furnished: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-            {filters.amenities?.map(
-              (amenity) => (
-                <Pill
-                  key={amenity}
-                  label={amenity}
-                  onClear={() =>
-                    setFilters(
-                      (current) => ({
-                        ...current,
-                        amenities:
-                          current.amenities.filter(
-                            (a) =>
-                              a !== amenity,
-                          ),
-                      }),
-                    )
-                  }
-                />
+            className="
+              input
+              h-10
+              w-[155px]
+              appearance-none
+              pl-9
+              pr-8
+              text-sm
+            "
+          >
+            {SORT_OPTIONS.map(
+              (option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </option>
               ),
             )}
-
-            {filters.q && (
-              <Pill
-                label={`Search: ${filters.q}`}
-                onClear={() =>
-                  setFilters(
-                    (current) => ({
-                      ...current,
-                      q: '',
-                    }),
-                  )
-                }
-              />
-            )}
-
-          </div>
-
-          {/* SORT + DENSITY */}
-
-          <div className="flex shrink-0 items-center gap-2">
-
-            {/* DENSITY */}
-
-            <div className="hidden items-center gap-1 rounded-xl ring-1 ring-ink-200 sm:flex">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setDensity(
-                    'comfortable',
-                  )
-                }
-                className={classNames(
-                  'rounded-lg p-2 transition',
-                  density ===
-                    'comfortable'
-                    ? 'bg-ink-100 text-ink-900'
-                    : 'text-ink-400 hover:text-ink-700',
-                )}
-                aria-label="Comfortable grid"
-              >
-                <Grid2x2 className="h-4 w-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setDensity(
-                    'compact',
-                  )
-                }
-                className={classNames(
-                  'rounded-lg p-2 transition',
-                  density ===
-                    'compact'
-                    ? 'bg-ink-100 text-ink-900'
-                    : 'text-ink-400 hover:text-ink-700',
-                )}
-                aria-label="Compact grid"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-
-            </div>
-
-            {/* SORT */}
-
-            <label className="relative">
-
-              <ArrowUpDown
-                className="
-                  pointer-events-none
-                  absolute
-                  left-3
-                  top-1/2
-                  h-4 w-4
-                  -translate-y-1/2
-                  text-ink-400
-                "
-              />
-
-              <select
-                value={sort}
-                onChange={(e) =>
-                  setSort(
-                    e.target.value,
-                  )
-                }
-                className="
-                  input
-                  appearance-none
-                  pl-9
-                  pr-8
-                "
-              >
-                {SORT_OPTIONS.map(
-                  (option) => (
-                    <option
-                      key={
-                        option.value
-                      }
-                      value={
-                        option.value
-                      }
-                    >
-                      {option.label}
-                    </option>
-                  ),
-                )}
-              </select>
-
-            </label>
-
-          </div>
-        </div>
-
+          </select>
+        </label>
       </div>
 
       {/* =====================================================
@@ -1615,12 +798,11 @@ export default function Properties() {
       ====================================================== */}
 
       {mapOpen && (
-        <div className="mb-5 lg:hidden">
+        <div className="mt-4 mb-5 lg:hidden">
+
           <div className="h-[65vh] min-h-[420px]">
             <PropertyMap
-              properties={
-                baseFiltered
-              }
+              properties={baseFiltered}
               selectedLocation={
                 mapLocation
               }
@@ -1635,6 +817,7 @@ export default function Properties() {
 
           {mapLocation && (
             <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+
               <div>
                 <p className="text-sm font-semibold text-brand-700">
                   {filtered.length}{' '}
@@ -1645,8 +828,7 @@ export default function Properties() {
                 </p>
 
                 <p className="text-xs text-brand-600">
-                  Within{' '}
-                  {MAP_RADIUS_KM} km
+                  Within {MAP_RADIUS_KM} km
                 </p>
               </div>
 
@@ -1665,46 +847,29 @@ export default function Properties() {
       )}
 
       {/* =====================================================
-          DESKTOP CONTENT
+          MAIN CONTENT
       ====================================================== */}
 
-      <div
-        className={classNames(
-          'mt-5',
-          mapOpen
-            ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-6'
-            : 'block',
-        )}
-      >
+      <div className="mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-6">
 
         {/* ===================================================
-            PROPERTY RESULTS
+            PROPERTY LIST
         ==================================================== */}
 
         <div className="min-w-0">
 
           {loading ? (
+            <div className="grid gap-6 sm:grid-cols-2">
 
-            <div
-              className={classNames(
-                'grid gap-6',
-                density ===
-                  'compact'
-                  ? 'sm:grid-cols-2 lg:grid-cols-3'
-                  : 'sm:grid-cols-2 lg:grid-cols-3',
-              )}
-            >
               {Array.from({
-                length: 6,
-              }).map(
-                (_, index) => (
-                  <SkeletonCard
-                    key={index}
-                  />
-                ),
-              )}
-            </div>
+                length: 4,
+              }).map((_, index) => (
+                <SkeletonCard
+                  key={index}
+                />
+              ))}
 
+            </div>
           ) : filtered.length === 0 ? (
 
             <EmptyState
@@ -1756,15 +921,8 @@ export default function Properties() {
 
           ) : (
 
-            <div
-              className={classNames(
-                'grid gap-6',
-                density ===
-                  'compact'
-                  ? 'sm:grid-cols-2 lg:grid-cols-3'
-                  : 'sm:grid-cols-2 lg:grid-cols-3',
-              )}
-            >
+            <div className="grid gap-6 sm:grid-cols-2">
+
               {filtered.map(
                 (
                   property,
@@ -1781,72 +939,68 @@ export default function Properties() {
                   />
                 ),
               )}
-            </div>
 
+            </div>
           )}
 
           <div className="mt-8">
             <DisclaimerBanner />
           </div>
-
         </div>
 
         {/* ===================================================
-            DESKTOP MAP — RIGHT SIDE
+            DESKTOP MAP — ALWAYS VISIBLE
         ==================================================== */}
 
-        {mapOpen && (
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 h-[calc(100vh-120px)]">
-              <PropertyMap
-                properties={
-                  baseFiltered
-                }
-                selectedLocation={
-                  mapLocation
-                }
-                onLocationSelect={
-                  handleMapLocation
-                }
-                radiusKm={
-                  MAP_RADIUS_KM
-                }
-              />
+        <aside className="hidden lg:block">
 
-              {mapLocation && (
-                <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
-                  <div>
-                    <p className="text-sm font-semibold text-brand-700">
-                      {filtered.length}{' '}
-                      {filtered.length ===
-                      1
-                        ? 'property'
-                        : 'properties'}{' '}
-                      nearby
-                    </p>
+          <div className="sticky top-24 h-[calc(100vh-120px)]">
 
-                    <p className="text-xs text-brand-600">
-                      Within{' '}
-                      {MAP_RADIUS_KM}{' '}
-                      km
-                    </p>
-                  </div>
+            <PropertyMap
+              properties={baseFiltered}
+              selectedLocation={
+                mapLocation
+              }
+              onLocationSelect={
+                handleMapLocation
+              }
+              radiusKm={
+                MAP_RADIUS_KM
+              }
+            />
 
-                  <button
-                    type="button"
-                    onClick={
-                      clearMapLocation
-                    }
-                    className="text-xs font-semibold text-brand-700 hover:text-brand-900"
-                  >
-                    Clear
-                  </button>
+            {mapLocation && (
+              <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+
+                <div>
+                  <p className="text-sm font-semibold text-brand-700">
+                    {filtered.length}{' '}
+                    {filtered.length === 1
+                      ? 'property'
+                      : 'properties'}{' '}
+                    nearby
+                  </p>
+
+                  <p className="text-xs text-brand-600">
+                    Within {MAP_RADIUS_KM} km
+                  </p>
                 </div>
-              )}
-            </div>
-          </aside>
-        )}
 
+                <button
+                  type="button"
+                  onClick={
+                    clearMapLocation
+                  }
+                  className="text-xs font-semibold text-brand-700 hover:text-brand-900"
+                >
+                  Clear
+                </button>
+
+              </div>
+            )}
+
+          </div>
+        </aside>
       </div>
 
       {/* =====================================================
@@ -1854,6 +1008,7 @@ export default function Properties() {
       ====================================================== */}
 
       <div className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 lg:hidden">
+
         <button
           type="button"
           onClick={() =>
@@ -1863,13 +1018,13 @@ export default function Properties() {
           }
           className="
             inline-flex
-            min-w-[120px]
+            min-w-[110px]
             items-center
             justify-center
             gap-2
             rounded-full
             bg-brand-700
-            px-5
+            px-6
             py-3
             text-sm
             font-bold
@@ -1887,7 +1042,7 @@ export default function Properties() {
           )}
 
           {mapOpen
-            ? 'Show list'
+            ? 'Show apartments'
             : 'Map'}
         </button>
       </div>
