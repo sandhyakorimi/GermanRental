@@ -66,7 +66,7 @@ export default function Home() {
             {['Berlin', 'Munich', 'Frankfurt', 'Hamburg', 'Cologne'].map((c) => (
               <Link
                 key={c}
-                to={`/properties?city=${c}`}
+                to={`/properties?city=${c}`}   
                 className="rounded-full border border-white/80 bg-white/90 px-3 py-1 font-medium text-ink-700 shadow-soft transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:border-accent-300/70 hover:bg-white hover:text-accent-600 hover:shadow-glass"
               >
                 {c}
