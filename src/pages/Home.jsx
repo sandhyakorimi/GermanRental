@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative -mt-20 overflow-hidden">
         {/* Background image */}
         <div
           className="absolute inset-0 -z-20 bg-cover bg-no-repeat"

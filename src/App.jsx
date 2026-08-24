@@ -1,3 +1,5 @@
+
+
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
@@ -35,7 +37,7 @@ export default function App() {
             <ScrollToTop />
             <div className="flex min-h-screen flex-col">
               <Navbar />
-              <main className="flex-1">
+              <main className="flex-1 pt-20">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/properties" element={<Properties />} />
