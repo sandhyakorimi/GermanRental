@@ -1,6 +1,3 @@
-
-
-
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
@@ -25,94 +22,243 @@ import { GERMAN_CITIES } from '../data/cities'
 import GermanMitraIcon from '../assets/Standaloneicon.png'
 
 export function Navbar() {
-  const { user, isAuthenticated, logout, isAdmin, isLandlord } = useAuth()
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    isAdmin,
+    isLandlord,
+  } = useAuth()
+
   const { favorites } = useFavorites()
 
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const [apartmentsOpen, setApartmentsOpen] =
+    useState(false)
+
+  const [
+    mobileApartmentsOpen,
+    setMobileApartmentsOpen,
+  ] = useState(false)
+
   const [location, setLocation] = useState('')
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showSuggestions, setShowSuggestions] =
+    useState(false)
 
   const menuRef = useRef(null)
+  const apartmentMenuRef = useRef(null)
   const searchRef = useRef(null)
+
   const navigate = useNavigate()
 
+  /*
+   * =========================================================
+   * NAVBAR SCROLL
+   * =========================================================
+   */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8)
+    }
+
     onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+
+    window.addEventListener(
+      'scroll',
+      onScroll,
+      { passive: true },
+    )
+
+    return () =>
+      window.removeEventListener(
+        'scroll',
+        onScroll,
+      )
   }, [])
 
+  /*
+   * =========================================================
+   * CLOSE PROFILE / APARTMENT MENUS
+   * =========================================================
+   */
   useEffect(() => {
-    const onClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+    const onClick = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target,
+        )
+      ) {
+        setMenuOpen(false)
+      }
+
+      if (
+        apartmentMenuRef.current &&
+        !apartmentMenuRef.current.contains(
+          event.target,
+        )
+      ) {
+        setApartmentsOpen(false)
+      }
     }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+
+    document.addEventListener(
+      'mousedown',
+      onClick,
+    )
+
+    return () =>
+      document.removeEventListener(
+        'mousedown',
+        onClick,
+      )
   }, [])
 
+  /*
+   * =========================================================
+   * SEARCH OUTSIDE CLICK
+   * =========================================================
+   */
   useEffect(() => {
-    const onClick = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false)
+    const onClick = (event) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(
+          event.target,
+        )
+      ) {
+        setShowSuggestions(false)
+      }
     }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
+
+    document.addEventListener(
+      'mousedown',
+      onClick,
+    )
+
+    return () =>
+      document.removeEventListener(
+        'mousedown',
+        onClick,
+      )
   }, [])
 
+  /*
+   * =========================================================
+   * MOBILE SCROLL LOCK
+   * =========================================================
+   */
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    document.body.style.overflow =
+      mobileOpen ? 'hidden' : ''
+
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [mobileOpen])
 
+  /*
+   * =========================================================
+   * LOCATION SEARCH
+   * =========================================================
+   */
   const filteredCities = location.trim()
     ? GERMAN_CITIES.filter((city) => {
-        const searchText = location.trim().toLowerCase()
+        const searchText =
+          location.trim().toLowerCase()
+
         return (
-          city.name.toLowerCase().includes(searchText) ||
-          city.state.toLowerCase().includes(searchText)
+          city.name
+            .toLowerCase()
+            .includes(searchText) ||
+          city.state
+            .toLowerCase()
+            .includes(searchText)
         )
       }).slice(0, 6)
     : []
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    const searchValue = location.trim()
+  const handleSearch = (event) => {
+    event.preventDefault()
+
+    const searchValue =
+      location.trim()
+
     setShowSuggestions(false)
-    navigate(searchValue ? `/properties?q=${encodeURIComponent(searchValue)}` : '/properties')
+
+    navigate(
+      searchValue
+        ? `/properties?q=${encodeURIComponent(
+            searchValue,
+          )}`
+        : '/properties',
+    )
   }
 
-  const handleSuggestionClick = (city) => {
+  const handleSuggestionClick = (
+    city,
+  ) => {
     if (!city || !city.name) return
+
     setLocation(city.name)
     setShowSuggestions(false)
-    navigate(`/properties?city=${encodeURIComponent(city.name)}`)
+
+    navigate(
+      `/properties?city=${encodeURIComponent(
+        city.name,
+      )}`,
+    )
   }
 
+  /*
+   * =========================================================
+   * LOGOUT
+   * =========================================================
+   */
   const handleLogout = () => {
-    logout()
-    setMenuOpen(false)
-  }
+  logout()
 
-  const dashboardLink = isAdmin ? '/dashboard/admin' : isLandlord ? '/dashboard/landlord' : '/dashboard/tenant'
+  setMenuOpen(false)
+  setApartmentsOpen(false)
+  setMobileApartmentsOpen(false)
+  setMobileOpen(false)
+
+  // Refresh the application after logout
+  window.location.reload()
+}
+  const dashboardLink = isAdmin
+    ? '/dashboard/admin'
+    : isLandlord
+      ? '/dashboard/landlord'
+      : '/dashboard/tenant'
 
   return (
     <header
       className={classNames(
-        'fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-500 ease-smooth',
+        'fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-500 ease-smooth',
         scrolled
           ? 'border-brand-100/40 bg-gradient-to-b from-white/50 to-brand-50/50 shadow-glass backdrop-blur-xl'
-          : 'border-brand-100/40 bg-gradient-to-b from-white/60 to-brand-50/60 backdrop-blur-xl'
+          : 'border-brand-100/40 bg-gradient-to-b from-white/60 to-brand-50/60 backdrop-blur-xl',
       )}
     >
       <nav className="mx-auto flex min-h-[72px] w-full max-w-[1500px] items-center gap-4 px-5 lg:px-8">
-        <Link to="/" aria-label="German Mitra home" className="shrink-0 transition-transform duration-300 ease-spring hover:scale-105">
+
+        {/* LOGO */}
+
+        <Link
+          to="/"
+          aria-label="German Mitra home"
+          className="shrink-0 transition-transform duration-300 ease-spring hover:scale-105"
+        >
           <img
             src={germanMitraLogo}
             alt="German Mitra"
             className="hidden h-14 w-auto object-contain md:block"
           />
+
           <img
             src={GermanMitraIcon}
             alt="German Mitra"
@@ -120,29 +266,45 @@ export function Navbar() {
           />
         </Link>
 
-        {/* Desktop search — glass pill */}
+        {/* ===================================================
+            DESKTOP SEARCH
+        ==================================================== */}
+
         <div
           ref={searchRef}
           className="relative hidden min-w-0 flex-1 md:block md:max-w-[380px] lg:max-w-[400px]"
         >
           <form onSubmit={handleSearch}>
             <div className="flex h-12 w-full items-center overflow-hidden rounded-full border border-white/60 bg-white/60 shadow-soft backdrop-blur-md transition-all duration-300 ease-smooth focus-within:border-brand-300/70 focus-within:bg-white/90 focus-within:shadow-glass">
+
               <Search className="ml-4 h-4 w-4 shrink-0 text-ink-400" />
+
               <input
                 id="navbar-location"
                 type="text"
                 value={location}
-                onChange={(e) => {
-                  const value = e.target.value
+                onChange={(event) => {
+                  const value =
+                    event.target.value
+
                   setLocation(value)
-                  setShowSuggestions(value.trim().length > 0)
+
+                  setShowSuggestions(
+                    value.trim().length >
+                      0,
+                  )
                 }}
-                onFocus={() => { if (location.trim()) setShowSuggestions(true) }}
+                onFocus={() => {
+                  if (location.trim()) {
+                    setShowSuggestions(true)
+                  }
+                }}
                 placeholder="Search city or location"
                 aria-label="Search city or location"
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent px-3 text-sm font-medium text-ink-900 outline-none placeholder:text-ink-400"
               />
+
               <button
                 type="submit"
                 aria-label="Search"
@@ -153,18 +315,106 @@ export function Navbar() {
             </div>
           </form>
 
-          {showSuggestions && location.trim() && (
-            <SearchSuggestions cities={filteredCities} onSelect={handleSuggestionClick} />
-          )}
+          {showSuggestions &&
+            location.trim() && (
+              <SearchSuggestions
+                cities={filteredCities}
+                onSelect={
+                  handleSuggestionClick
+                }
+              />
+            )}
         </div>
 
+        {/* ===================================================
+            DESKTOP NAV
+        ==================================================== */}
+
         <div className="ml-auto hidden items-center gap-1 md:flex">
-          <Link
-            to="/properties"
-            className="rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700 hover:backdrop-blur-sm"
+
+          {/* APARTMENTS DROPDOWN */}
+
+          <div
+            ref={apartmentMenuRef}
+            className="relative"
           >
-            Apartments
-          </Link>
+            <button
+              type="button"
+              onClick={() =>
+                setApartmentsOpen(
+                  (open) => !open,
+                )
+              }
+              className={classNames(
+                'inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700',
+                apartmentsOpen &&
+                  'bg-brand-50 text-brand-700',
+              )}
+              aria-expanded={
+                apartmentsOpen
+              }
+              aria-haspopup="menu"
+            >
+              Apartments
+
+              <ChevronDown
+                className={classNames(
+                  'h-4 w-4 transition-transform duration-200',
+                  apartmentsOpen &&
+                    'rotate-180',
+                )}
+              />
+            </button>
+
+            {apartmentsOpen && (
+              <div
+                className="
+                  absolute
+                  right-0
+                  top-full
+                  z-50
+                  mt-2
+                  w-48
+                  overflow-hidden
+                  rounded-2xl
+                  border
+                  border-white/60
+                  bg-white/90
+                  p-2
+                  shadow-glassHover
+                  backdrop-blur-xl
+                  animate-scale-in
+                "
+                role="menu"
+              >
+                <ApartmentMenuLink
+                  to="/properties"
+                  label="Rent"
+                  onClick={() =>
+                    setApartmentsOpen(false)
+                  }
+                />
+
+                <ApartmentMenuLink
+                  to="/post-property"
+                  label="Post"
+                  onClick={() =>
+                    setApartmentsOpen(false)
+                  }
+                />
+
+                <ApartmentMenuLink
+                  to="/request-apartment"
+                  label="Request"
+                  onClick={() =>
+                    setApartmentsOpen(false)
+                  }
+                />
+              </div>
+            )}
+          </div>
+
+          {/* LANDLORD */}
 
           <Link
             to="/dashboard/landlord"
@@ -173,6 +423,8 @@ export function Navbar() {
             For landlords
           </Link>
 
+          {/* WISHLIST */}
+
           <Link
             to="/dashboard/tenant"
             aria-label="Wishlist"
@@ -180,6 +432,7 @@ export function Navbar() {
             className="relative flex h-11 w-11 items-center justify-center rounded-full text-ink-900 transition-all duration-300 ease-spring hover:scale-110 hover:bg-brand-50/80 hover:text-brand-700"
           >
             <Heart className="h-5 w-5" />
+
             {favorites.length > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-500 px-1.5 text-[10px] font-bold text-white shadow-accent animate-glow-pulse">
                 {favorites.length}
@@ -187,38 +440,95 @@ export function Navbar() {
             )}
           </Link>
 
+          {/* PROFILE */}
+
           {isAuthenticated ? (
-            <div className="relative ml-2" ref={menuRef}>
+            <div
+              className="relative ml-2"
+              ref={menuRef}
+            >
               <button
-                onClick={() => setMenuOpen((open) => !open)}
+                type="button"
+                onClick={() =>
+                  setMenuOpen(
+                    (open) => !open,
+                  )
+                }
                 className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 py-1 pl-1 pr-3 backdrop-blur-md transition-all duration-300 ease-smooth hover:border-brand-200 hover:bg-brand-50/80 hover:shadow-soft"
               >
-                <img src={user.avatar} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+
                 <span className="max-w-24 truncate text-sm font-semibold text-ink-800">
                   {user.name.split(' ')[0]}
                 </span>
-                <ChevronDown className={classNames('h-4 w-4 text-ink-500 transition-transform duration-300', menuOpen && 'rotate-180')} />
+
+                <ChevronDown
+                  className={classNames(
+                    'h-4 w-4 text-ink-500 transition-transform duration-300',
+                    menuOpen &&
+                      'rotate-180',
+                  )}
+                />
               </button>
 
               {menuOpen && (
                 <div className="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-white/60 bg-white/80 py-2 shadow-glassHover backdrop-blur-xl animate-scale-in">
+
                   <div className="px-4 py-3">
-                    <p className="text-sm font-semibold text-ink-900">{user.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-ink-500">{user.email}</p>
+                    <p className="text-sm font-semibold text-ink-900">
+                      {user.name}
+                    </p>
+
+                    <p className="mt-0.5 truncate text-xs text-ink-500">
+                      {user.email}
+                    </p>
                   </div>
 
                   <div className="mx-3 h-px bg-ink-100/70" />
 
-                  <MenuItem to={dashboardLink} icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" onClick={() => setMenuOpen(false)} />
-                  <MenuItem to="/dashboard/tenant" icon={<Heart className="h-4 w-4" />} label="Wishlist" onClick={() => setMenuOpen(false)} />
+                  <MenuItem
+                    to={dashboardLink}
+                    icon={
+                      <LayoutDashboard className="h-4 w-4" />
+                    }
+                    label="Dashboard"
+                    onClick={() =>
+                      setMenuOpen(false)
+                    }
+                  />
+
+                  <MenuItem
+                    to="/dashboard/tenant"
+                    icon={
+                      <Heart className="h-4 w-4" />
+                    }
+                    label="Wishlist"
+                    onClick={() =>
+                      setMenuOpen(false)
+                    }
+                  />
 
                   {isLandlord && (
-                    <MenuItem to="/dashboard/landlord/new" icon={<Plus className="h-4 w-4" />} label="Add property" onClick={() => setMenuOpen(false)} />
+                    <MenuItem
+                      to="/dashboard/landlord/new"
+                      icon={
+                        <Plus className="h-4 w-4" />
+                      }
+                      label="Add property"
+                      onClick={() =>
+                        setMenuOpen(false)
+                      }
+                    />
                   )}
 
                   <div className="mx-3 my-1 h-px bg-ink-100/70" />
 
                   <button
+                    type="button"
                     onClick={handleLogout}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-ink-700 transition-colors duration-200 hover:bg-brand-50/80 hover:text-brand-700"
                   >
@@ -238,25 +548,44 @@ export function Navbar() {
           )}
         </div>
 
-        {/* Mobile search — inline in navbar row */}
-        <div ref={searchRef} className="relative min-w-0 flex-1 md:hidden">
+        {/* ===================================================
+            MOBILE SEARCH
+        ==================================================== */}
+
+        <div
+          ref={searchRef}
+          className="relative min-w-0 flex-1 md:hidden"
+        >
           <form onSubmit={handleSearch}>
             <div className="flex h-11 w-full items-center overflow-hidden rounded-full border border-white/60 bg-white/70 shadow-soft backdrop-blur-sm transition-all duration-300 focus-within:border-brand-300/70">
+
               <Search className="ml-3 h-4 w-4 shrink-0 text-ink-400" />
+
               <input
                 type="text"
                 value={location}
-                onChange={(e) => {
-                  const value = e.target.value
+                onChange={(event) => {
+                  const value =
+                    event.target.value
+
                   setLocation(value)
-                  setShowSuggestions(value.trim().length > 0)
+
+                  setShowSuggestions(
+                    value.trim().length >
+                      0,
+                  )
                 }}
-                onFocus={() => { if (location.trim()) setShowSuggestions(true) }}
+                onFocus={() => {
+                  if (location.trim()) {
+                    setShowSuggestions(true)
+                  }
+                }}
                 placeholder="Search city"
                 aria-label="Search city or location"
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent px-2 text-sm outline-none placeholder:text-ink-400"
               />
+
               <button
                 type="submit"
                 aria-label="Search"
@@ -267,36 +596,147 @@ export function Navbar() {
             </div>
           </form>
 
-          {showSuggestions && location.trim() && (
-            <SearchSuggestions cities={filteredCities} onSelect={handleSuggestionClick} mobile />
-          )}
+          {showSuggestions &&
+            location.trim() && (
+              <SearchSuggestions
+                cities={filteredCities}
+                onSelect={
+                  handleSuggestionClick
+                }
+                mobile
+              />
+            )}
         </div>
 
+        {/* MOBILE MENU BUTTON */}
+
         <button
-          onClick={() => setMobileOpen((open) => !open)}
+          type="button"
+          onClick={() =>
+            setMobileOpen(
+              (open) => !open,
+            )
+          }
           className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full p-2.5 text-ink-800 transition-all duration-300 ease-spring hover:scale-110 hover:bg-brand-50/80 md:hidden"
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
         >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
         </button>
       </nav>
 
-      {/* Mobile menu — glass panel */}
+      {/* =====================================================
+          MOBILE MENU
+      ====================================================== */}
+
       {mobileOpen && (
         <div className="border-t border-white/40 bg-white/80 backdrop-blur-xl md:hidden animate-fade-in">
           <div className="mx-auto max-w-[1500px] space-y-1 px-5 py-4">
-            <MobileLink to="/properties" label="Apartments" onClick={() => setMobileOpen(false)} />
-            <MobileLink to="/dashboard/landlord" label="For landlords" onClick={() => setMobileOpen(false)} />
+
+            {/* MOBILE APARTMENTS */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setMobileApartmentsOpen(
+                  (open) => !open,
+                )
+              }
+              className="
+                flex
+                w-full
+                items-center
+                justify-between
+                rounded-xl
+                px-4
+                py-3
+                text-left
+                text-base
+                font-semibold
+                text-ink-800
+                transition-all
+                duration-300
+                hover:bg-brand-50/80
+                hover:text-brand-700
+              "
+            >
+              <span>
+                Apartments
+              </span>
+
+              <ChevronDown
+                className={classNames(
+                  'h-5 w-5 transition-transform',
+                  mobileApartmentsOpen &&
+                    'rotate-180',
+                )}
+              />
+            </button>
+
+            {mobileApartmentsOpen && (
+              <div className="ml-3 space-y-1 border-l-2 border-brand-100 pl-2">
+
+                <MobileLink
+                  to="/properties"
+                  label="Rent"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setMobileApartmentsOpen(
+                      false,
+                    )
+                  }}
+                />
+
+                <MobileLink
+                  to="/post-property"
+                  label="Post"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setMobileApartmentsOpen(
+                      false,
+                    )
+                  }}
+                />
+
+                <MobileLink
+                  to="/request-apartment"
+                  label="Request"
+                  onClick={() => {
+                    setMobileOpen(false)
+                    setMobileApartmentsOpen(
+                      false,
+                    )
+                  }}
+                />
+              </div>
+            )}
+
+            <MobileLink
+              to="/dashboard/landlord"
+              label="For landlords"
+              onClick={() =>
+                setMobileOpen(false)
+              }
+            />
+
+            {/* WISHLIST */}
 
             <Link
               to="/dashboard/tenant"
-              onClick={() => setMobileOpen(false)}
+              onClick={() =>
+                setMobileOpen(false)
+              }
               aria-label="Wishlist"
               className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-ink-800 transition-all duration-300 hover:bg-brand-50/80 hover:text-brand-700"
             >
               <Heart className="h-5 w-5" />
+
               <span>Wishlist</span>
+
               {favorites.length > 0 && (
                 <span className="ml-auto rounded-full bg-accent-500 px-2 py-0.5 text-xs font-bold text-white shadow-accent">
                   {favorites.length}
@@ -306,18 +746,30 @@ export function Navbar() {
 
             <div className="my-3 h-px bg-ink-100/70" />
 
+            {/* AUTH */}
+
             {isAuthenticated ? (
               <>
                 <Link
                   to={dashboardLink}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() =>
+                    setMobileOpen(false)
+                  }
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-ink-800 transition-all duration-300 hover:bg-brand-50/80 hover:text-brand-700"
                 >
-                  {isAdmin ? <Shield className="h-5 w-5" /> : isLandlord ? <Home className="h-5 w-5" /> : <User className="h-5 w-5" />}
+                  {isAdmin ? (
+                    <Shield className="h-5 w-5" />
+                  ) : isLandlord ? (
+                    <Home className="h-5 w-5" />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+
                   Dashboard
                 </Link>
 
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-base font-semibold text-ink-800 transition-all duration-300 hover:bg-brand-50/80 hover:text-brand-700"
                 >
@@ -328,7 +780,9 @@ export function Navbar() {
             ) : (
               <Link
                 to="/login"
-                onClick={() => setMobileOpen(false)}
+                onClick={() =>
+                  setMobileOpen(false)
+                }
                 className="mt-2 block rounded-full bg-gradient-to-r from-accent-400 to-accent-600 px-6 py-3 text-center text-base font-semibold text-white shadow-accent transition-all duration-300 ease-spring active:scale-95"
               >
                 Sign in
@@ -341,10 +795,53 @@ export function Navbar() {
   )
 }
 
-function SearchSuggestions({ cities, onSelect, mobile = false }) {
+/* ============================================================
+   APARTMENT MENU LINK
+============================================================ */
+
+function ApartmentMenuLink({
+  to,
+  label,
+  onClick,
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="
+        block
+        rounded-xl
+        px-4
+        py-3
+        text-sm
+        font-semibold
+        text-ink-700
+        transition-all
+        duration-200
+        hover:bg-brand-50
+        hover:text-brand-700
+      "
+    >
+      {label}
+    </Link>
+  )
+}
+
+/* ============================================================
+   SEARCH SUGGESTIONS
+============================================================ */
+
+function SearchSuggestions({
+  cities,
+  onSelect,
+  mobile = false,
+}) {
   return (
     <div
-      className={`absolute left-0 right-0 top-full z-[60] mt-2 overflow-hidden rounded-2xl border border-white/60 bg-white/85 shadow-glassHover backdrop-blur-xl animate-scale-in ${mobile ? 'mx-5' : ''}`}
+      className={classNames(
+        'absolute left-0 right-0 top-full z-[60] mt-2 overflow-hidden rounded-2xl border border-white/60 bg-white/85 shadow-glassHover backdrop-blur-xl animate-scale-in',
+        mobile && 'mx-5',
+      )}
     >
       {cities.length > 0 ? (
         <div className="py-2">
@@ -356,30 +853,53 @@ function SearchSuggestions({ cities, onSelect, mobile = false }) {
             <button
               key={city.name}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); onSelect(city) }}
+              onMouseDown={(event) => {
+                event.preventDefault()
+                onSelect(city)
+              }}
               className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-200 hover:bg-brand-50/80"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
                 <Search className="h-4 w-4" />
               </div>
+
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-ink-900">{city.name}</p>
-                <p className="truncate text-xs text-ink-500">{city.state}</p>
+                <p className="truncate text-sm font-semibold text-ink-900">
+                  {city.name}
+                </p>
+
+                <p className="truncate text-xs text-ink-500">
+                  {city.state}
+                </p>
               </div>
             </button>
           ))}
         </div>
       ) : (
         <div className="px-4 py-5 text-center">
-          <p className="text-sm font-medium text-ink-700">No locations found</p>
-          <p className="mt-1 text-xs text-ink-400">Try another city or location</p>
+          <p className="text-sm font-medium text-ink-700">
+            No locations found
+          </p>
+
+          <p className="mt-1 text-xs text-ink-400">
+            Try another city or location
+          </p>
         </div>
       )}
     </div>
   )
 }
 
-function MenuItem({ to, icon, label, onClick }) {
+/* ============================================================
+   MENU ITEM
+============================================================ */
+
+function MenuItem({
+  to,
+  icon,
+  label,
+  onClick,
+}) {
   return (
     <Link
       to={to}
@@ -392,7 +912,15 @@ function MenuItem({ to, icon, label, onClick }) {
   )
 }
 
-function MobileLink({ to, label, onClick }) {
+/* ============================================================
+   MOBILE LINK
+============================================================ */
+
+function MobileLink({
+  to,
+  label,
+  onClick,
+}) {
   return (
     <Link
       to={to}
