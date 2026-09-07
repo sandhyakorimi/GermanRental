@@ -21,6 +21,24 @@ const INQUIRIES_KEY =
 const REQUESTS_KEY =
   'dh:apartment-requests'
 
+const MOCK_CONTACTS = [
+  {
+    phone: '+917893644742',
+    whatsapp: '+917893644742',
+    email: 'pandillavenkataprasad@gmail.com',
+  },
+  {
+    phone: '+919505439502',
+    whatsapp: '+919505439502',
+    email: 'sandhyakorimi5566@gmail.com',
+  },
+  {
+    phone: '+919398854629',
+    whatsapp: '+919398854629',
+    email: 'sandhyakorimi08@gmail.com',
+  },
+]
+
 const SEED_INQUIRIES = [
   {
     id: 'inq-1',
@@ -77,6 +95,72 @@ const SEED_INQUIRIES = [
   },
 ]
 
+/*
+ * =========================================================
+ * SYNC MOCK PROPERTY CONTACTS
+ *
+ * Keeps every existing property exactly as it is,
+ * but updates only phone / whatsapp / email for
+ * the mock properties.
+ *
+ * Existing landlord information such as:
+ * name, role, avatar, rating, listings, responseTime,
+ * verified and since are preserved.
+ * =========================================================
+ */
+function syncMockContacts(items) {
+  if (!Array.isArray(items)) {
+    return PROPERTIES
+  }
+
+  const propertyMap = new Map(
+    PROPERTIES.map((property) => [
+      property.id,
+      property,
+    ]),
+  )
+
+  return items.map((property, index) => {
+    const mockProperty =
+      propertyMap.get(property.id)
+
+    if (!mockProperty) {
+      return property
+    }
+
+    const fallbackContact =
+      MOCK_CONTACTS[
+        index % MOCK_CONTACTS.length
+      ]
+
+    const mockLandlord =
+      mockProperty.landlord || {}
+
+    const currentLandlord =
+      property.landlord || {}
+
+    return {
+      ...property,
+
+      landlord: {
+        ...currentLandlord,
+
+        phone:
+          mockLandlord.phone ||
+          fallbackContact.phone,
+
+        whatsapp:
+          mockLandlord.whatsapp ||
+          fallbackContact.whatsapp,
+
+        email:
+          mockLandlord.email ||
+          fallbackContact.email,
+      },
+    }
+  })
+}
+
 function readListings() {
   try {
     const raw =
@@ -85,7 +169,7 @@ function readListings() {
       )
 
     if (!raw) {
-      return PROPERTIES
+      return syncMockContacts(PROPERTIES)
     }
 
     const parsed =
@@ -95,12 +179,12 @@ function readListings() {
       !Array.isArray(parsed) ||
       parsed.length === 0
     ) {
-      return PROPERTIES
+      return syncMockContacts(PROPERTIES)
     }
 
-    return parsed
+    return syncMockContacts(parsed)
   } catch {
-    return PROPERTIES
+    return syncMockContacts(PROPERTIES)
   }
 }
 
@@ -410,10 +494,14 @@ export function ListingsProvider({
    */
   const resetData =
     useCallback(() => {
-      setListings(PROPERTIES)
+      setListings(
+        syncMockContacts(PROPERTIES),
+      )
+
       setInquiries(
         SEED_INQUIRIES,
       )
+
       setApartmentRequests([])
     }, [])
 

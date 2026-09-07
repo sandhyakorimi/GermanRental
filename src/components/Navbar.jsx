@@ -366,11 +366,15 @@ export function Navbar() {
                 }
                 className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 py-1 pl-1 pr-3 backdrop-blur-md transition-all duration-300 ease-smooth hover:border-brand-200 hover:bg-brand-50/80 hover:shadow-soft"
               >
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="h-9 w-9 rounded-full object-cover"
-                />
+               <img
+  src={user?.avatar || 'https://i.pravatar.cc/150?img=12'}
+  alt={user?.name || 'User'}
+  className="h-9 w-9 rounded-full object-cover"
+  onError={(event) => {
+    event.currentTarget.onerror = null
+    event.currentTarget.src = 'https://i.pravatar.cc/150?img=12'
+  }}
+/>
 
                 <span className="max-w-24 truncate text-sm font-semibold text-ink-800">
                   {user.name.split(' ')[0]}

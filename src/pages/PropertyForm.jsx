@@ -15,6 +15,7 @@ const empty = {
   rentalConditions: ['Kaution (deposit): 2 months cold rent', 'Schufa record required'],
   houseRules: ['No smoking indoors', 'Quiet hours 22:00 – 06:00'],
   whatsapp: '',
+  contactEmail: '',
 }
 
 export default function PropertyForm() {
@@ -30,7 +31,14 @@ export default function PropertyForm() {
   const [form, setForm] = useState(() => {
     if (editing) {
       const p = getProperty(id)
-      if (p) return { ...p }
+      if (p) {
+        return {
+          ...empty,
+          ...p,
+          whatsapp: p.landlord?.whatsapp || p.landlord?.phone || '',
+          contactEmail: p.landlord?.email || '',
+        }
+      }
     }
     return { ...empty }
   })
@@ -81,6 +89,10 @@ export default function PropertyForm() {
       toast.error('Please enter your WhatsApp number.')
       return
     }
+    if (!form.contactEmail?.trim()) {
+      toast.error('Please enter your email address.')
+      return
+    }
     if (form.images.length === 0) {
       toast.error('Please add at least one apartment photo.')
       return
@@ -96,7 +108,7 @@ export default function PropertyForm() {
         role: 'Landlord',
         phone: '+49 30 5555 0000',
         whatsapp: form.whatsapp.trim(),
-        email: user?.email || 'landlord@deutschhome.de',
+        email: form.contactEmail.trim(),
         avatar: user?.avatar || 'https://i.pravatar.cc/150?img=12',
         rating: 4.5, listings: 1, responseTime: 'Usually replies within 1 day',
         verified: false, since: '2025',
@@ -133,19 +145,35 @@ export default function PropertyForm() {
         </FormCard>
 
         <FormCard title="Contact information">
-          <Field label="WhatsApp number" full>
-            <input
-              type="tel"
-              className="input"
-              value={form.whatsapp}
-              onChange={(e) => set('whatsapp', e.target.value)}
-              placeholder="+49 151 23456789"
-              required
-            />
-            <p className="mt-1.5 text-xs text-ink-500">
-              Tenants can use this number to contact you about this listing.
-            </p>
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="WhatsApp number">
+              <input
+                type="tel"
+                className="input"
+                value={form.whatsapp}
+                onChange={(e) => set('whatsapp', e.target.value)}
+                placeholder="+49 151 23456789"
+                required
+              />
+              <p className="mt-1.5 text-xs text-ink-500">
+                Tenants can contact you on WhatsApp.
+              </p>
+            </Field>
+
+            <Field label="Email address">
+              <input
+                type="email"
+                className="input"
+                value={form.contactEmail}
+                onChange={(e) => set('contactEmail', e.target.value)}
+                placeholder="landlord@example.com"
+                required
+              />
+              <p className="mt-1.5 text-xs text-ink-500">
+                Tenants can contact you by email.
+              </p>
+            </Field>
+          </div>
         </FormCard>
 
         <FormCard title="Property details">
