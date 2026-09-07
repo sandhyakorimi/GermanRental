@@ -20,20 +20,22 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative -mt-20 overflow-hidden">
+      <section className="relative -mt-20 overflow-visible">
         {/* Background image */}
-        <div
-          className="absolute inset-0 -z-20 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: "url('/hero-background2.jpeg')",
-            backgroundPosition: '30% center',
-          }}
-        />
-        {/* Optional dark overlay if text needs more contrast later — leaving image unobstructed for now */}
+        <div className="absolute inset-0 -z-20 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-no-repeat"
+            style={{
+              backgroundImage: "url('/hero-background2.jpeg')",
+              backgroundPosition: '30% center',
+            }}
+          />
+          {/* Optional dark overlay if text needs more contrast later — leaving image unobstructed for now */}
 
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl animate-float" />
-          <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl animate-float" />
+            <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+          </div>
         </div>
 
         <div className="container-page pt-24 sm:pt-24 md:pt-24 lg:pt-28 pb-16">
@@ -55,7 +57,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-4xl animate-fade-up" style={{ animationDelay: '240ms' }}>
+          <div className="relative z-40 mx-auto mt-8 max-w-4xl animate-fade-up" style={{ animationDelay: '240ms' }}>
             <div className="rounded-3xl border border-white/70 bg-white/30 p-2 shadow-glass backdrop-blur-md transition-all duration-300 hover:shadow-glassHover">
               <SearchBar variant="hero" />
             </div>
@@ -77,7 +79,7 @@ export default function Home() {
       </section>
 
       {/* Stats strip — glass card floating over the seam */}
-      <section className="relative border-y border-ink-100 bg-white">
+      <section className="relative z-0 border-y border-ink-100 bg-white">
         <div className="container-page grid grid-cols-2 divide-x divide-ink-100 sm:grid-cols-4">
           {[
             { value: '18+', label: 'Curated listings' },

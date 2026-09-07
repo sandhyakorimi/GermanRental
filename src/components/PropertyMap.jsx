@@ -99,6 +99,7 @@ function MapEvents({ onLocationSelect }) {
       onLocationSelect({
         lat: event.latlng.lat,
         lng: event.latlng.lng,
+        propertyId: null,
       })
     },
   })
@@ -214,14 +215,27 @@ export function PropertyMap({
             return null
           }
 
+          const isSelected =
+            selectedLocation?.propertyId === property.id
+
           return (
             <Marker
               key={property.id}
               position={[lat, lng]}
-              icon={HOME_ICON}
+              icon={
+                isSelected
+                  ? SELECTED_ICON
+                  : HOME_ICON
+              }
               eventHandlers={{
                 click: (event) => {
                   event.originalEvent.stopPropagation()
+
+                  onLocationSelect({
+                    lat,
+                    lng,
+                    propertyId: property.id,
+                  })
                 },
               }}
             >
@@ -248,32 +262,22 @@ export function PropertyMap({
           )
         })}
 
-        {/* SELECTED LOCATION */}
+        {/* SELECTED PROPERTY RADIUS */}
 
-        {selectedLocation && (
-          <>
-            <Marker
-              position={[
-                selectedLocation.lat,
-                selectedLocation.lng,
-              ]}
-              icon={SELECTED_ICON}
-            />
-
-            <Circle
-              center={[
-                selectedLocation.lat,
-                selectedLocation.lng,
-              ]}
-              radius={radiusKm * 1000}
-              pathOptions={{
-                color: '#003B73',
-                fillColor: '#F59E0B',
-                fillOpacity: 0.12,
-                weight: 2,
-              }}
-            />
-          </>
+        {selectedLocation?.propertyId && (
+          <Circle
+            center={[
+              selectedLocation.lat,
+              selectedLocation.lng,
+            ]}
+            radius={radiusKm * 1000}
+            pathOptions={{
+              color: '#003B73',
+              fillColor: '#F59E0B',
+              fillOpacity: 0.12,
+              weight: 2,
+            }}
+          />
         )}
       </MapContainer>
     </div>

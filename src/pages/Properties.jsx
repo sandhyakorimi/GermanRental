@@ -69,6 +69,7 @@ export default function Properties() {
    */
   const [mapOpen, setMapOpen] = useState(false)
   const [mapLocation, setMapLocation] = useState(null)
+  const [selectedPropertyId, setSelectedPropertyId] = useState(null)
 
   /*
    * =========================================================
@@ -423,15 +424,33 @@ export default function Properties() {
 
       case 'newest':
       default:
-        return list.sort(
+        list.sort(
           (a, b) =>
             new Date(b.createdAt) -
             new Date(a.createdAt),
         )
+        break
     }
+
+    if (selectedPropertyId) {
+      const selectedIndex = list.findIndex(
+        (property) => property.id === selectedPropertyId,
+      )
+
+      if (selectedIndex > 0) {
+        const [selectedProperty] = list.splice(
+          selectedIndex,
+          1,
+        )
+        list.unshift(selectedProperty)
+      }
+    }
+
+    return list
   }, [
     baseFiltered,
     mapLocation,
+    selectedPropertyId,
     sort,
   ])
 
@@ -461,11 +480,16 @@ export default function Properties() {
    * =========================================================
    */
   const handleMapLocation = (location) => {
-    setMapLocation(location)
+    setMapLocation({
+      lat: location.lat,
+      lng: location.lng,
+    })
+    setSelectedPropertyId(location.propertyId || null)
   }
 
   const clearMapLocation = () => {
     setMapLocation(null)
+    setSelectedPropertyId(null)
   }
 
   return (

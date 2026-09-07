@@ -4,10 +4,10 @@ import {
   MapPin,
   Home,
   Euro,
-  BedDouble,
-  Sofa,
   SlidersHorizontal,
   Check,
+  Users,
+  CalendarDays,
 } from 'lucide-react'
 
 import {
@@ -34,7 +34,6 @@ export function FilterBar({
 
   const toggleAmenity = (amenity) => {
     const current = filters.amenities || []
-
     const exists = current.includes(amenity)
 
     const next = exists
@@ -44,26 +43,31 @@ export function FilterBar({
     update('amenities', next)
   }
 
-  return (
-    <div className="relative z-30">
-      {/* =====================================================
-          HORIZONTAL FILTER ROW
-      ====================================================== */}
+  const moreActive =
+    Boolean(filters.bedrooms) ||
+    Boolean(filters.furnished) ||
+    Boolean(filters.roomsMin) ||
+    Boolean(filters.roomsMax) ||
+    Boolean(filters.personsMin) ||
+    Boolean(filters.personsMax) ||
+    Boolean(filters.anmeldung) ||
+    Boolean(filters.squareMetersMin) ||
+    Boolean(filters.squareMetersMax) ||
+    Boolean(filters.internet) ||
+    Boolean(filters.rentMin) ||
+    Boolean(filters.rentMax) ||
+    Boolean(filters.includingUtilities) ||
+    Boolean(filters.rentalType) ||
+    Boolean(filters.amenities?.length)
 
+  return (
+    <div className="relative z-[100]">
       <div
-        className="
-          no-scrollbar
-          flex
-          gap-2
-          overflow-x-auto
-          pb-2
-        "
+        className="no-scrollbar flex gap-2 overflow-x-auto pb-2"
         onScroll={() => {
-          // Close dropdown while horizontally scrolling
           if (open) setOpen(null)
         }}
       >
-
         {/* CITY */}
 
         <FilterDropdown
@@ -89,10 +93,7 @@ export function FilterBar({
               )}
             >
               Any city
-
-              {!filters.city && (
-                <Check className="h-4 w-4" />
-              )}
+              {!filters.city && <Check className="h-4 w-4" />}
             </button>
 
             {GERMAN_CITIES.map((city) => (
@@ -110,10 +111,7 @@ export function FilterBar({
                     : 'text-ink-700 hover:bg-ink-50',
                 )}
               >
-                <span>
-                  {city.name}
-                </span>
-
+                <span>{city.name}</span>
                 {filters.city === city.name && (
                   <Check className="h-4 w-4" />
                 )}
@@ -184,21 +182,16 @@ export function FilterBar({
               step="50"
               value={filters.maxRent || 2500}
               onChange={(e) =>
-                update(
-                  'maxRent',
-                  e.target.value,
-                )
+                update('maxRent', e.target.value)
               }
               className="w-full accent-brand-600"
             />
 
             <div className="mt-2 flex justify-between text-xs text-ink-500">
               <span>€300</span>
-
               <span className="font-semibold text-brand-700">
                 €{filters.maxRent || 2500}
               </span>
-
               <span>€2500+</span>
             </div>
 
@@ -212,156 +205,302 @@ export function FilterBar({
           </div>
         </FilterDropdown>
 
-        {/* BEDROOMS */}
+        {/* SHARING WITH */}
 
         <FilterDropdown
-          id="bedrooms"
-          open={open === 'bedrooms'}
+          id="sharingWith"
+          open={open === 'sharingWith'}
           setOpen={setOpen}
-          label={
-            filters.bedrooms
-              ? `${filters.bedrooms}+ bedrooms`
-              : 'Bedrooms'
-          }
-          icon={<BedDouble className="h-4 w-4" />}
-          active={Boolean(filters.bedrooms)}
+          label={filters.sharingWith || 'Sharing with'}
+          icon={<Users className="h-4 w-4" />}
+          active={Boolean(filters.sharingWith)}
         >
-          <div className="flex min-w-[200px] flex-col gap-1.5">
-            {['', '1', '2', '3', '4'].map(
-              (number) => (
-                <button
-                  key={number || 'any'}
-                  type="button"
-                  onClick={() => {
-                    update(
-                      'bedrooms',
-                      number,
-                    )
-                    setOpen(null)
-                  }}
-                  className={classNames(
-                    'flex items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm',
-                    filters.bedrooms === number
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-ink-700 hover:bg-ink-50',
-                  )}
-                >
-                  {number
-                    ? `${number}+ bedrooms`
-                    : 'Any bedrooms'}
-
-                  {filters.bedrooms === number && (
-                    <Check className="h-4 w-4" />
-                  )}
-                </button>
-              ),
-            )}
+          <div className="min-w-[220px]">
+            {[
+              ['', 'Any'],
+              ['girls', 'Girls'],
+              ['boys', 'Boys'],
+            ].map(([value, label]) => (
+              <button
+                key={value || 'any'}
+                type="button"
+                onClick={() => {
+                  update('sharingWith', value)
+                  setOpen(null)
+                }}
+                className={classNames(
+                  'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm',
+                  filters.sharingWith === value
+                    ? 'bg-brand-50 text-brand-700'
+                    : 'text-ink-700 hover:bg-ink-50',
+                )}
+              >
+                <span>{label}</span>
+                {filters.sharingWith === value && (
+                  <Check className="h-4 w-4" />
+                )}
+              </button>
+            ))}
           </div>
         </FilterDropdown>
 
-        {/* FURNISHED */}
+        {/* RENTAL TYPE */}
 
         <FilterDropdown
-          id="furnished"
-          open={open === 'furnished'}
+          id="rentalType"
+          open={open === 'rentalType'}
           setOpen={setOpen}
           label={
-            filters.furnished === 'yes'
-              ? 'Furnished'
-              : filters.furnished === 'no'
-                ? 'Unfurnished'
-                : 'Furnished'
+            filters.rentalType
+              ? filters.rentalType === 'rent'
+                ? 'Rent'
+                : 'Sublet'
+              : 'Rental type'
           }
-          icon={<Sofa className="h-4 w-4" />}
-          active={Boolean(filters.furnished)}
+          icon={<Home className="h-4 w-4" />}
+          active={Boolean(filters.rentalType)}
         >
-          <div className="flex min-w-[190px] flex-col gap-1.5">
-            <OptionButton
-              active={!filters.furnished}
-              onClick={() => {
-                update('furnished', '')
-                setOpen(null)
-              }}
-            >
-              Any
-            </OptionButton>
+          <div className="min-w-[220px]">
+            {[
+              ['', 'Any'],
+              ['rent', 'Rent'],
+              ['sublet', 'Sublet'],
+            ].map(([value, label]) => (
+              <button
+                key={value || 'any'}
+                type="button"
+                onClick={() => {
+                  update('rentalType', value)
+                  setOpen(null)
+                }}
+                className={classNames(
+                  'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm',
+                  filters.rentalType === value
+                    ? 'bg-brand-50 text-brand-700'
+                    : 'text-ink-700 hover:bg-ink-50',
+                )}
+              >
+                <span>{label}</span>
 
-            <OptionButton
-              active={filters.furnished === 'yes'}
-              onClick={() => {
-                update('furnished', 'yes')
-                setOpen(null)
-              }}
-            >
-              Furnished
-            </OptionButton>
-
-            <OptionButton
-              active={filters.furnished === 'no'}
-              onClick={() => {
-                update('furnished', 'no')
-                setOpen(null)
-              }}
-            >
-              Unfurnished
-            </OptionButton>
+                {filters.rentalType === value && (
+                  <Check className="h-4 w-4" />
+                )}
+              </button>
+            ))}
           </div>
         </FilterDropdown>
 
-        {/* AMENITIES */}
+        {/* MORE */}
 
         <FilterDropdown
-          id="amenities"
-          open={open === 'amenities'}
+          id="more"
+          open={open === 'more'}
           setOpen={setOpen}
-          label={
-            filters.amenities?.length
-              ? `${filters.amenities.length} amenities`
-              : 'Amenities'
-          }
-          icon={
-            <SlidersHorizontal className="h-4 w-4" />
-          }
-          active={Boolean(filters.amenities?.length)}
+          label="More"
+          icon={<SlidersHorizontal className="h-4 w-4" />}
+          active={moreActive}
         >
-          <div className="w-[280px] max-w-[calc(100vw-2rem)]">
-            <div className="max-h-72 overflow-y-auto">
-              {AMENITY_LIST.map((amenity) => {
-                const active = (
-                  filters.amenities || []
-                ).includes(amenity)
+          <div className="w-[340px] max-w-[calc(100vw-2rem)]">
+            <div className="max-h-[70vh] space-y-5 overflow-y-auto pr-1">
+              {/* BEDROOMS */}
 
-                return (
-                  <button
-                    key={amenity}
-                    type="button"
-                    onClick={() =>
-                      toggleAmenity(amenity)
-                    }
-                    className={classNames(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm',
-                      active
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-ink-700 hover:bg-ink-50',
-                    )}
-                  >
-                    <span
+              <MoreSection title="Bedrooms">
+                <div className="flex flex-wrap gap-1.5">
+                  {['', '1', '2', '3', '4'].map((value) => (
+                    <OptionButton
+                      key={value || 'any'}
+                      active={filters.bedrooms === value}
+                      onClick={() => update('bedrooms', value)}
+                    >
+                      {value ? `${value}+` : 'Any'}
+                    </OptionButton>
+                  ))}
+                </div>
+              </MoreSection>
+
+              {/* FURNISHED */}
+
+              <MoreSection title="Furnished">
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    ['', 'Any'],
+                    ['yes', 'Furnished'],
+                    ['no', 'Unfurnished'],
+                  ].map(([value, label]) => (
+                    <OptionButton
+                      key={value || 'any'}
+                      active={filters.furnished === value}
+                      onClick={() => update('furnished', value)}
+                    >
+                      {label}
+                    </OptionButton>
+                  ))}
+                </div>
+              </MoreSection>
+
+              {/* NO. ROOMS */}
+
+              <RangeFields
+                title="No. rooms"
+                minValue={filters.roomsMin}
+                maxValue={filters.roomsMax}
+                onMin={(value) => update('roomsMin', value)}
+                onMax={(value) => update('roomsMax', value)}
+              />
+
+              {/* NO. PERSONS */}
+
+              <RangeFields
+                title="No. persons"
+                minValue={filters.personsMin}
+                maxValue={filters.personsMax}
+                onMin={(value) => update('personsMin', value)}
+                onMax={(value) => update('personsMax', value)}
+              />
+
+              {/* ANMELDUNG */}
+
+              <ToggleOptions
+                title="Anmeldung"
+                value={filters.anmeldung}
+                options={[
+                  ['', 'Any'],
+                  ['yes', 'Yes'],
+                  ['no', 'No'],
+                ]}
+                onChange={(value) =>
+                  update('anmeldung', value)
+                }
+              />
+
+              {/* SQUARE METERS */}
+
+              <RangeFields
+                title="Square meters"
+                minValue={filters.squareMetersMin}
+                maxValue={filters.squareMetersMax}
+                onMin={(value) =>
+                  update('squareMetersMin', value)
+                }
+                onMax={(value) =>
+                  update('squareMetersMax', value)
+                }
+              />
+
+              {/* INTERNET */}
+
+              <ToggleOptions
+                title="Internet"
+                value={filters.internet}
+                options={[
+                  ['', 'Any'],
+                  ['yes', 'Yes'],
+                  ['no', 'No'],
+                ]}
+                onChange={(value) =>
+                  update('internet', value)
+                }
+              />
+
+              {/* RENT */}
+
+              <RangeFields
+                title="Rent (€ / month)"
+                minValue={filters.rentMin}
+                maxValue={filters.rentMax}
+                onMin={(value) => update('rentMin', value)}
+                onMax={(value) => update('rentMax', value)}
+                prefix="€"
+              />
+
+              {/* INCLUDING UTILITIES */}
+
+              <ToggleOptions
+                title="Including utilities"
+                value={filters.includingUtilities}
+                options={[
+                  ['', 'Any'],
+                  ['yes', 'Yes'],
+                  ['no', 'No'],
+                ]}
+                onChange={(value) =>
+                  update('includingUtilities', value)
+                }
+              />
+
+              {/* RENTAL TIME */}
+
+              <MoreSection title="Rental time">
+                <div className="min-w-[220px]">
+                  {[
+                    ['', 'Any'],
+                    ['1-3', '1–3 months'],
+                    ['3-6', '3–6 months'],
+                    ['6-12', '6–12 months'],
+                    ['12+', '12+ months'],
+                  ].map(([value, label]) => (
+                    <button
+                      key={value || 'any'}
+                      type="button"
+                      onClick={() => update('rentalTime', value)}
                       className={classNames(
-                        'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-                        active
-                          ? 'border-brand-600 bg-brand-600 text-white'
-                          : 'border-ink-300 bg-white',
+                        'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm',
+                        filters.rentalTime === value
+                          ? 'bg-brand-50 text-brand-700'
+                          : 'text-ink-700 hover:bg-ink-50',
                       )}
                     >
-                      {active && (
-                        <Check className="h-3 w-3" />
-                      )}
-                    </span>
+                      <span>{label}</span>
 
-                    {amenity}
-                  </button>
-                )
-              })}
+                      {filters.rentalTime === value && (
+                        <Check className="h-4 w-4" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </MoreSection>
+
+              {/* AMENITIES */}
+
+              <MoreSection title="Amenities">
+                <div className="space-y-1">
+                  {AMENITY_LIST.map((amenity) => {
+                    const active = (
+                      filters.amenities || []
+                    ).includes(amenity)
+
+                    return (
+                      <button
+                        key={amenity}
+                        type="button"
+                        onClick={() =>
+                          toggleAmenity(amenity)
+                        }
+                        className={classNames(
+                          'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-xs',
+                          active
+                            ? 'bg-brand-50 text-brand-700'
+                            : 'text-ink-700 hover:bg-ink-50',
+                        )}
+                      >
+                        <span
+                          className={classNames(
+                            'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
+                            active
+                              ? 'border-brand-600 bg-brand-600 text-white'
+                              : 'border-ink-300 bg-white',
+                          )}
+                        >
+                          {active && (
+                            <Check className="h-3 w-3" />
+                          )}
+                        </span>
+                        {amenity}
+                      </button>
+                    )
+                  })}
+                </div>
+              </MoreSection>
             </div>
 
             <button
@@ -373,6 +512,87 @@ export function FilterBar({
             </button>
           </div>
         </FilterDropdown>
+      </div>
+    </div>
+  )
+}
+
+function MoreSection({ title, children }) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold text-ink-900">
+        {title}
+      </p>
+      {children}
+    </div>
+  )
+}
+
+function RangeFields({
+  title,
+  minValue,
+  maxValue,
+  onMin,
+  onMax,
+  prefix = '',
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold text-ink-900">
+        {title}
+      </p>
+
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="number"
+          min="0"
+          value={minValue || ''}
+          onChange={(e) => onMin(e.target.value)}
+          placeholder={`${prefix} Min`}
+          className="input"
+        />
+
+        <input
+          type="number"
+          min="0"
+          value={maxValue || ''}
+          onChange={(e) => onMax(e.target.value)}
+          placeholder={`${prefix} Max`}
+          className="input"
+        />
+      </div>
+    </div>
+  )
+}
+
+function ToggleOptions({
+  title,
+  value,
+  options,
+  onChange,
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold text-ink-900">
+        {title}
+      </p>
+
+      <div className="flex flex-wrap gap-1.5">
+        {options.map(([optionValue, label]) => (
+          <button
+            key={optionValue || 'any'}
+            type="button"
+            onClick={() => onChange(optionValue)}
+            className={classNames(
+              'rounded-lg border px-3 py-2 text-xs font-medium transition',
+              value === optionValue
+                ? 'border-brand-600 bg-brand-50 text-brand-700'
+                : 'border-ink-200 bg-white text-ink-700 hover:bg-ink-50',
+            )}
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   )
@@ -405,7 +625,7 @@ function FilterDropdown({
     const rect =
       buttonRef.current.getBoundingClientRect()
 
-    const estimatedWidth = 300
+    const estimatedWidth = 340
 
     const left = Math.max(
       16,
@@ -429,15 +649,12 @@ function FilterDropdown({
     updatePosition()
 
     const onResize = () => updatePosition()
-
     const onScroll = () => updatePosition()
 
     const onMouseDown = (event) => {
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(
-          event.target,
-        )
+        !wrapperRef.current.contains(event.target)
       ) {
         setOpen(null)
       }
@@ -503,7 +720,6 @@ function FilterDropdown({
         )}
       >
         {icon}
-
         {label}
 
         <ChevronDown

@@ -36,20 +36,11 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const [apartmentsOpen, setApartmentsOpen] =
-    useState(false)
-
-  const [
-    mobileApartmentsOpen,
-    setMobileApartmentsOpen,
-  ] = useState(false)
-
   const [location, setLocation] = useState('')
   const [showSuggestions, setShowSuggestions] =
     useState(false)
 
   const menuRef = useRef(null)
-  const apartmentMenuRef = useRef(null)
   const searchRef = useRef(null)
 
   const navigate = useNavigate()
@@ -95,14 +86,6 @@ export function Navbar() {
         setMenuOpen(false)
       }
 
-      if (
-        apartmentMenuRef.current &&
-        !apartmentMenuRef.current.contains(
-          event.target,
-        )
-      ) {
-        setApartmentsOpen(false)
-      }
     }
 
     document.addEventListener(
@@ -332,87 +315,14 @@ export function Navbar() {
 
         <div className="ml-auto hidden items-center gap-1 md:flex">
 
-          {/* APARTMENTS DROPDOWN */}
+          {/* APARTMENTS */}
 
-          <div
-            ref={apartmentMenuRef}
-            className="relative"
+          <Link
+            to="/properties"
+            className="rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700"
           >
-            <button
-              type="button"
-              onClick={() =>
-                setApartmentsOpen(
-                  (open) => !open,
-                )
-              }
-              className={classNames(
-                'inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700',
-                apartmentsOpen &&
-                  'bg-brand-50 text-brand-700',
-              )}
-              aria-expanded={
-                apartmentsOpen
-              }
-              aria-haspopup="menu"
-            >
-              Apartments
-
-              <ChevronDown
-                className={classNames(
-                  'h-4 w-4 transition-transform duration-200',
-                  apartmentsOpen &&
-                    'rotate-180',
-                )}
-              />
-            </button>
-
-            {apartmentsOpen && (
-              <div
-                className="
-                  absolute
-                  right-0
-                  top-full
-                  z-50
-                  mt-2
-                  w-48
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  border-white/60
-                  bg-white/90
-                  p-2
-                  shadow-glassHover
-                  backdrop-blur-xl
-                  animate-scale-in
-                "
-                role="menu"
-              >
-                <ApartmentMenuLink
-                  to="/properties"
-                  label="Rent"
-                  onClick={() =>
-                    setApartmentsOpen(false)
-                  }
-                />
-
-                <ApartmentMenuLink
-                  to="/post-property"
-                  label="Post"
-                  onClick={() =>
-                    setApartmentsOpen(false)
-                  }
-                />
-
-                <ApartmentMenuLink
-                  to="/request-apartment"
-                  label="Request"
-                  onClick={() =>
-                    setApartmentsOpen(false)
-                  }
-                />
-              </div>
-            )}
-          </div>
+            Apartments
+          </Link>
 
           {/* LANDLORD */}
 
@@ -639,81 +549,13 @@ export function Navbar() {
 
             {/* MOBILE APARTMENTS */}
 
-            <button
-              type="button"
+            <MobileLink
+              to="/properties"
+              label="Apartments"
               onClick={() =>
-                setMobileApartmentsOpen(
-                  (open) => !open,
-                )
+                setMobileOpen(false)
               }
-              className="
-                flex
-                w-full
-                items-center
-                justify-between
-                rounded-xl
-                px-4
-                py-3
-                text-left
-                text-base
-                font-semibold
-                text-ink-800
-                transition-all
-                duration-300
-                hover:bg-brand-50/80
-                hover:text-brand-700
-              "
-            >
-              <span>
-                Apartments
-              </span>
-
-              <ChevronDown
-                className={classNames(
-                  'h-5 w-5 transition-transform',
-                  mobileApartmentsOpen &&
-                    'rotate-180',
-                )}
-              />
-            </button>
-
-            {mobileApartmentsOpen && (
-              <div className="ml-3 space-y-1 border-l-2 border-brand-100 pl-2">
-
-                <MobileLink
-                  to="/properties"
-                  label="Rent"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    setMobileApartmentsOpen(
-                      false,
-                    )
-                  }}
-                />
-
-                <MobileLink
-                  to="/post-property"
-                  label="Post"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    setMobileApartmentsOpen(
-                      false,
-                    )
-                  }}
-                />
-
-                <MobileLink
-                  to="/request-apartment"
-                  label="Request"
-                  onClick={() => {
-                    setMobileOpen(false)
-                    setMobileApartmentsOpen(
-                      false,
-                    )
-                  }}
-                />
-              </div>
-            )}
+            />
 
             <MobileLink
               to="/dashboard/landlord"

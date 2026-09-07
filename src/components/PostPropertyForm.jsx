@@ -7,6 +7,9 @@ import {
   BedDouble,
   Ruler,
   Check,
+  Camera,
+  ImagePlus,
+  X,
 } from 'lucide-react'
 
 import {
@@ -75,6 +78,44 @@ export function PostPropertyForm() {
             ],
       }
     })
+  }
+
+  const handleImageFiles = (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
+
+    const remaining = Math.max(0, 10 - form.images.length)
+    const selectedFiles = files.slice(0, remaining)
+
+    const readers = selectedFiles.map(
+      (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        }),
+    )
+
+    Promise.all(readers)
+      .then((images) => {
+        setForm((current) => ({
+          ...current,
+          images: [...current.images, ...images],
+        }))
+      })
+      .catch(() => {
+        setError('Unable to load one or more images. Please try again.')
+      })
+
+    event.target.value = ''
+  }
+
+  const removeImage = (index) => {
+    setForm((current) => ({
+      ...current,
+      images: current.images.filter((_, imageIndex) => imageIndex !== index),
+    }))
   }
 
   const submit = (event) => {
@@ -289,6 +330,112 @@ export function PostPropertyForm() {
               />
             </div>
           </div>
+        </section>
+
+        {/* APARTMENT PHOTOS */}
+
+        <section className="border-t border-ink-100 pt-6">
+          <div className="mb-5 flex items-center gap-3">
+            <ImagePlus className="h-5 w-5 text-brand-700" />
+
+            <div>
+              <h2 className="font-bold text-ink-900">
+                Apartment photos
+              </h2>
+
+              <p className="text-xs text-ink-500">
+                Add up to 10 clear photos of the property
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <label className="cursor-pointer rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50/50 p-5 transition-colors hover:border-brand-400 hover:bg-brand-50">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageFiles}
+                className="sr-only"
+              />
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-soft">
+                  <ImagePlus className="h-6 w-6" />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-ink-900">
+                    Choose photos
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-500">
+                    Select images from your device
+                  </p>
+                </div>
+              </div>
+            </label>
+
+            <label className="cursor-pointer rounded-2xl border-2 border-dashed border-accent-200 bg-accent-50/40 p-5 transition-colors hover:border-accent-400 hover:bg-accent-50 sm:hidden">
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageFiles}
+                className="sr-only"
+              />
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-accent-600 shadow-soft">
+                  <Camera className="h-6 w-6" />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-ink-900">
+                    Take a photo
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-500">
+                    Use your phone camera
+                  </p>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {form.images.length > 0 && (
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {form.images.map((image, index) => (
+                <div
+                  key={`${image}-${index}`}
+                  className="group relative overflow-hidden rounded-xl border border-ink-200 bg-ink-50"
+                >
+                  <img
+                    src={image}
+                    alt={`Apartment ${index + 1}`}
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+
+                  {index === 0 && (
+                    <span className="absolute left-2 top-2 rounded-full bg-brand-700 px-2 py-1 text-[10px] font-semibold text-white">
+                      Cover photo
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-ink-700 shadow-soft transition-colors hover:bg-red-50 hover:text-red-600"
+                    aria-label={`Remove image ${index + 1}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="mt-3 text-xs text-ink-500">
+            JPG, PNG or WEBP. The first photo will be used as the cover image.
+          </p>
         </section>
 
         {/* RENT */}
