@@ -16,6 +16,15 @@ import {
 
 import { classNames } from '../utils/format'
 
+const MAX_RENT_OPTIONS = [
+  'Up to €500',
+  '€500 – €750',
+  '€750 – €1,000',
+  '€1,000 – €1,500',
+  '€1,500 – €2,000',
+  '€2,000+',
+]
+
 export function SearchBar({
   variant = 'hero',
   className = '',
@@ -77,7 +86,16 @@ export function SearchBar({
     }
 
     if (maxRent) {
-      params.set('maxRent', maxRent)
+      const rentValues = {
+        'Up to €500': '500',
+        '€500 – €750': '750',
+        '€750 – €1,000': '1000',
+        '€1,000 – €1,500': '1500',
+        '€1,500 – €2,000': '2000',
+        '€2,000+': '2000+',
+      }
+
+      params.set('maxRent', rentValues[maxRent])
     }
 
     const query = params.toString()
@@ -213,82 +231,37 @@ export function SearchBar({
             MAX RENT
         ====================================================== */}
 
-        <label
-          className="
-            flex
-            min-w-0
-            flex-1
-            items-center
-            gap-1.5
-            border-r
-            border-white/35
-            px-2
-            sm:gap-2
-            sm:px-3
-          "
-        >
-          <Euro
-            className="
-              h-4
-              w-4
-              shrink-0
-              text-[#064B7A]
-              sm:h-[18px]
-              sm:w-[18px]
-            "
-          />
-
-          <span
-            className="
-              flex
-              min-w-0
-              flex-1
-              flex-col
-              justify-center
-            "
-          >
-            <span
+        <DropdownField
+          icon={
+            <Euro
               className="
-                truncate
-                text-[8px]
-                font-semibold
-                uppercase
-                tracking-[0.08em]
-                text-[#064B7A]/55
-                sm:text-[10px]
-              "
-            >
-              Max rent
-            </span>
-
-            <input
-              type="number"
-              min="0"
-              step="50"
-              value={maxRent}
-              onChange={(e) =>
-                setMaxRent(e.target.value)
-              }
-              onFocus={() =>
-                setOpenMenu(null)
-              }
-              placeholder="Any"
-              aria-label="Maximum rent"
-              className="
-                mt-0.5
-                w-full
-                min-w-0
-                bg-transparent
-                text-[11px]
-                font-semibold
-                text-[#102A43]
-                placeholder:text-[#064B7A]/45
-                outline-none
-                sm:text-sm
+                h-4
+                w-4
+                shrink-0
+                text-[#064B7A]
+                sm:h-[18px]
+                sm:w-[18px]
               "
             />
-          </span>
-        </label>
+          }
+          label="Max rent"
+          value={maxRent || 'Any'}
+          open={openMenu === 'maxRent'}
+          onToggle={() =>
+            setOpenMenu(
+              openMenu === 'maxRent'
+                ? null
+                : 'maxRent',
+            )
+          }
+          options={MAX_RENT_OPTIONS}
+          selected={maxRent}
+          defaultOption="Any"
+          onSelect={(value) => {
+            setMaxRent(value)
+            setOpenMenu(null)
+          }}
+        />
 
         {/* =====================================================
             SEARCH BUTTON
@@ -352,6 +325,7 @@ function DropdownField({
   onToggle,
   options,
   selected,
+  defaultOption = '',
   onSelect,
 }) {
   const dropdownRef = useRef(null)
@@ -507,10 +481,11 @@ function DropdownField({
             overflow-hidden
             rounded-2xl
             border
-            border-[#D9E3EC]
-            bg-white
+            border-white/70
+            bg-white/90
             p-1.5
-            shadow-[0_20px_50px_rgba(0,59,99,0.28)]
+            backdrop-blur-sm
+            shadow-[0_20px_50px_rgba(0,59,99,0.20)]
           "
         >
           {/* =================================================
@@ -542,9 +517,9 @@ function DropdownField({
             )}
           >
             <span>
-              {label === 'City'
+              {defaultOption || (label === 'City'
                 ? 'Any city'
-                : 'Any type'}
+                : 'Any type')}
             </span>
 
             {!selected && (

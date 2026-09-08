@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
@@ -70,6 +70,7 @@ export default function Properties() {
   const [mapOpen, setMapOpen] = useState(false)
   const [mapLocation, setMapLocation] = useState(null)
   const [selectedPropertyId, setSelectedPropertyId] = useState(null)
+  const ignoreInitialMapViewport = useRef(true)
 
   /*
    * =========================================================
@@ -486,7 +487,19 @@ export default function Properties() {
     })
     setSelectedPropertyId(location.propertyId || null)
   }
+  const handleMapViewport = (location) => {
+  if (ignoreInitialMapViewport.current) {
+    ignoreInitialMapViewport.current = false
+    return
+  }
 
+  setMapLocation({
+    lat: location.lat,
+    lng: location.lng,
+  })
+
+  setSelectedPropertyId(null)
+}
   const clearMapLocation = () => {
     setMapLocation(null)
     setSelectedPropertyId(null)
@@ -826,17 +839,20 @@ export default function Properties() {
 
           <div className="h-[65vh] min-h-[420px]">
             <PropertyMap
-              properties={baseFiltered}
-              selectedLocation={
-                mapLocation
-              }
-              onLocationSelect={
-                handleMapLocation
-              }
-              radiusKm={
-                MAP_RADIUS_KM
-              }
-            />
+  properties={baseFiltered}
+  selectedLocation={
+    mapLocation
+  }
+  onLocationSelect={
+    handleMapLocation
+  }
+  onViewportChange={
+    handleMapViewport
+  }
+  radiusKm={
+    MAP_RADIUS_KM
+  }
+/>
           </div>
 
           {mapLocation && (
@@ -927,7 +943,7 @@ export default function Properties() {
                     }
                     className="btn-primary"
                   >
-                    Clear map location
+                    Show all properties
                   </button>
                 ) : (
                   <button
@@ -981,17 +997,20 @@ export default function Properties() {
           <div className="sticky top-24 h-[calc(100vh-120px)]">
 
             <PropertyMap
-              properties={baseFiltered}
-              selectedLocation={
-                mapLocation
-              }
-              onLocationSelect={
-                handleMapLocation
-              }
-              radiusKm={
-                MAP_RADIUS_KM
-              }
-            />
+  properties={baseFiltered}
+  selectedLocation={
+    mapLocation
+  }
+  onLocationSelect={
+    handleMapLocation
+  }
+  onViewportChange={
+    handleMapViewport
+  }
+  radiusKm={
+    MAP_RADIUS_KM
+  }
+/>
 
             {mapLocation && (
               <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
@@ -1017,7 +1036,7 @@ export default function Properties() {
                   }
                   className="text-xs font-semibold text-brand-700 hover:text-brand-900"
                 >
-                  Clear
+                  Show all properties
                 </button>
 
               </div>

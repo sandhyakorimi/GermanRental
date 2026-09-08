@@ -61,7 +61,7 @@ export function FilterBar({
     Boolean(filters.amenities?.length)
 
   return (
-    <div className="relative z-[100]">
+    <div className="relative z-40">
       <div
         className="no-scrollbar flex gap-2 overflow-x-auto pb-2"
         onScroll={() => {
@@ -734,7 +734,7 @@ function FilterDropdown({
         <div
           className="
             fixed
-            z-[9999]
+            z-40
             rounded-2xl
             border
             border-ink-200

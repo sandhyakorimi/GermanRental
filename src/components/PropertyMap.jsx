@@ -7,7 +7,7 @@ import {
   useMapEvents,
   Marker,
 } from 'react-leaflet'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 
 const GERMANY_CENTER = [51.1657, 10.4515]
@@ -93,8 +93,22 @@ const SELECTED_ICON = L.divIcon({
   popupAnchor: [0, -46],
 })
 
-function MapEvents({ onLocationSelect }) {
+function MapEvents({
+  onLocationSelect,
+  onViewportChange,
+}) {
+  const userInteractingRef =
+    useRef(false)
+
   useMapEvents({
+    zoomstart() {
+      userInteractingRef.current = true
+    },
+
+    dragstart() {
+      userInteractingRef.current = true
+    },
+
     click(event) {
       onLocationSelect({
         lat: event.latlng.lat,
@@ -102,42 +116,74 @@ function MapEvents({ onLocationSelect }) {
         propertyId: null,
       })
     },
+
+    moveend(event) {
+      if (!userInteractingRef.current) {
+        return
+      }
+
+      userInteractingRef.current = false
+
+      const center =
+        event.target.getCenter()
+
+      onViewportChange({
+        lat: center.lat,
+        lng: center.lng,
+      })
+    },
   })
 
   return null
 }
 
-function FitMapToProperties({ properties }) {
+function FitMapToProperties({
+  properties,
+}) {
   const map = useMap()
 
   useEffect(() => {
-    const validProperties = properties.filter((property) => {
-      if (!property.coordinates) return false
+    const validProperties =
+      properties.filter((property) => {
+        if (!property.coordinates) {
+          return false
+        }
 
-      const lat = Number(property.coordinates.lat)
-      const lng = Number(property.coordinates.lng)
+        const lat = Number(
+          property.coordinates.lat,
+        )
 
-      return (
-        Number.isFinite(lat) &&
-        Number.isFinite(lng)
-      )
-    })
+        const lng = Number(
+          property.coordinates.lng,
+        )
+
+        return (
+          Number.isFinite(lat) &&
+          Number.isFinite(lng)
+        )
+      })
 
     if (!validProperties.length) {
       map.setView(
         GERMANY_CENTER,
         DEFAULT_ZOOM,
       )
+
       return
     }
 
     if (validProperties.length === 1) {
-      const property = validProperties[0]
+      const property =
+        validProperties[0]
 
       map.setView(
         [
-          Number(property.coordinates.lat),
-          Number(property.coordinates.lng),
+          Number(
+            property.coordinates.lat,
+          ),
+          Number(
+            property.coordinates.lng,
+          ),
         ],
         14,
         {
@@ -149,10 +195,16 @@ function FitMapToProperties({ properties }) {
     }
 
     const bounds = L.latLngBounds(
-      validProperties.map((property) => [
-        Number(property.coordinates.lat),
-        Number(property.coordinates.lng),
-      ]),
+      validProperties.map(
+        (property) => [
+          Number(
+            property.coordinates.lat,
+          ),
+          Number(
+            property.coordinates.lng,
+          ),
+        ],
+      ),
     )
 
     map.fitBounds(bounds, {
@@ -168,6 +220,7 @@ function FitMapToProperties({ properties }) {
 export function PropertyMap({
   properties = [],
   onLocationSelect,
+  onViewportChange,
   selectedLocation,
   radiusKm = 2,
 }) {
@@ -190,7 +243,12 @@ export function PropertyMap({
         />
 
         <MapEvents
-          onLocationSelect={onLocationSelect}
+          onLocationSelect={
+            onLocationSelect
+          }
+          onViewportChange={
+            onViewportChange
+          }
         />
 
         {/* PROPERTY HOME MARKERS */}
@@ -216,7 +274,8 @@ export function PropertyMap({
           }
 
           const isSelected =
-            selectedLocation?.propertyId === property.id
+            selectedLocation?.propertyId ===
+            property.id
 
           return (
             <Marker
@@ -234,7 +293,8 @@ export function PropertyMap({
                   onLocationSelect({
                     lat,
                     lng,
-                    propertyId: property.id,
+                    propertyId:
+                      property.id,
                   })
                 },
               }}

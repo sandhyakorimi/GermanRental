@@ -99,10 +99,12 @@ export default function PropertyDetails() {
   }
 
   const share = () => {
+    const propertyUrl = `${import.meta.env.VITE_APP_URL || window.location.origin}/properties/${property.id}`
+
     if (navigator.share) {
-      navigator.share({ title: property.title, url: window.location.href }).catch(() => {})
+      navigator.share({ title: property.title, url: propertyUrl }).catch(() => {})
     } else {
-      navigator.clipboard?.writeText(window.location.href)
+      navigator.clipboard?.writeText(propertyUrl)
       toast.success('Link copied to clipboard')
     }
   }

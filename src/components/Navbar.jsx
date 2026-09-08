@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import {
   Heart,
   Search,
@@ -85,7 +85,6 @@ export function Navbar() {
       ) {
         setMenuOpen(false)
       }
-
     }
 
     document.addEventListener(
@@ -202,16 +201,17 @@ export function Navbar() {
    * =========================================================
    */
   const handleLogout = () => {
-  logout()
+    logout()
 
-  setMenuOpen(false)
-  setApartmentsOpen(false)
-  setMobileApartmentsOpen(false)
-  setMobileOpen(false)
+    setMenuOpen(false)
+    setApartmentsOpen(false)
+    setMobileApartmentsOpen(false)
+    setMobileOpen(false)
 
-  // Refresh the application after logout
-  window.location.reload()
-}
+    // Refresh the application after logout
+    window.location.reload()
+  }
+
   const dashboardLink = isAdmin
     ? '/dashboard/admin'
     : isLandlord
@@ -227,6 +227,10 @@ export function Navbar() {
           : 'border-brand-100/40 bg-gradient-to-b from-white/60 to-brand-50/60 backdrop-blur-xl',
       )}
     >
+      {/* ==================================================
+          TOP NAVBAR
+      ================================================== */}
+
       <nav className="mx-auto flex min-h-[72px] w-full max-w-[1500px] items-center gap-4 px-5 lg:px-8">
 
         {/* LOGO */}
@@ -315,23 +319,55 @@ export function Navbar() {
 
         <div className="ml-auto hidden items-center gap-1 md:flex">
 
+          {/* HOME */}
+
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              classNames(
+                'rounded-full px-4 py-3 text-sm font-semibold transition-all duration-300 ease-smooth',
+                isActive
+                  ? 'bg-brand-50 text-brand-700 shadow-sm'
+                  : 'text-ink-900 hover:bg-brand-50/80 hover:text-brand-700',
+              )
+            }
+          >
+            Home
+          </NavLink>
+
           {/* APARTMENTS */}
 
-          <Link
+          <NavLink
             to="/properties"
-            className="rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700"
+            end
+            className={({ isActive }) =>
+              classNames(
+                'rounded-full px-4 py-3 text-sm font-semibold transition-all duration-300 ease-smooth',
+                isActive
+                  ? 'bg-brand-50 text-brand-700 shadow-sm'
+                  : 'text-ink-900 hover:bg-brand-50/80 hover:text-brand-700',
+              )
+            }
           >
             Apartments
-          </Link>
+          </NavLink>
 
           {/* LANDLORD */}
 
-          <Link
+          <NavLink
             to="/dashboard/landlord"
-            className="rounded-full px-4 py-3 text-sm font-semibold text-ink-900 transition-all duration-300 ease-smooth hover:bg-brand-50/80 hover:text-brand-700"
+            className={({ isActive }) =>
+              classNames(
+                'rounded-full px-4 py-3 text-sm font-semibold transition-all duration-300 ease-smooth',
+                isActive
+                  ? 'bg-brand-50 text-brand-700 shadow-sm'
+                  : 'text-ink-900 hover:bg-brand-50/80 hover:text-brand-700',
+              )
+            }
           >
             For landlords
-          </Link>
+          </NavLink>
 
           {/* WISHLIST */}
 
@@ -366,15 +402,15 @@ export function Navbar() {
                 }
                 className="flex items-center gap-2 rounded-full border border-white/60 bg-white/50 py-1 pl-1 pr-3 backdrop-blur-md transition-all duration-300 ease-smooth hover:border-brand-200 hover:bg-brand-50/80 hover:shadow-soft"
               >
-               <img
-  src={user?.avatar || 'https://i.pravatar.cc/150?img=12'}
-  alt={user?.name || 'User'}
-  className="h-9 w-9 rounded-full object-cover"
-  onError={(event) => {
-    event.currentTarget.onerror = null
-    event.currentTarget.src = 'https://i.pravatar.cc/150?img=12'
-  }}
-/>
+                <img
+                  src={user?.avatar || 'https://i.pravatar.cc/150?img=12'}
+                  alt={user?.name || 'User'}
+                  className="h-9 w-9 rounded-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null
+                    event.currentTarget.src = 'https://i.pravatar.cc/150?img=12'
+                  }}
+                />
 
                 <span className="max-w-24 truncate text-sm font-semibold text-ink-800">
                   {user.name.split(' ')[0]}
@@ -551,11 +587,23 @@ export function Navbar() {
         <div className="border-t border-white/40 bg-white/80 backdrop-blur-xl md:hidden animate-fade-in">
           <div className="mx-auto max-w-[1500px] space-y-1 px-5 py-4">
 
+            {/* MOBILE HOME */}
+
+            <MobileLink
+              to="/"
+              label="Home"
+              end
+              onClick={() =>
+                setMobileOpen(false)
+              }
+            />
+
             {/* MOBILE APARTMENTS */}
 
             <MobileLink
               to="/properties"
               label="Apartments"
+              end
               onClick={() =>
                 setMobileOpen(false)
               }
@@ -766,14 +814,23 @@ function MobileLink({
   to,
   label,
   onClick,
+  end = false,
 }) {
   return (
-    <Link
+    <NavLink
       to={to}
+      end={end}
       onClick={onClick}
-      className="block rounded-xl px-4 py-3 text-base font-semibold text-ink-800 transition-colors duration-200 hover:bg-brand-50/80 hover:text-brand-700"
+      className={({ isActive }) =>
+        classNames(
+          'block rounded-xl px-4 py-3 text-base font-semibold transition-all duration-200',
+          isActive
+            ? 'bg-brand-50 text-brand-700 shadow-sm'
+            : 'text-ink-800 hover:bg-brand-50/80 hover:text-brand-700',
+        )
+      }
     >
       {label}
-    </Link>
+    </NavLink>
   )
 }

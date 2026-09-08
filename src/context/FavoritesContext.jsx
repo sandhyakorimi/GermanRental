@@ -18,8 +18,6 @@ const FavoritesContext = createContext(null)
  * ============================================================
  * FAVORITES STORAGE
  *
- * New structure:
- *
  * {
  *   "user-sandhya": ["p101", "p103"],
  *   "user-prasad": ["p102"],
@@ -65,17 +63,56 @@ function readFavorites() {
   }
 }
 
+/*
+ * ============================================================
+ * RECENT STORAGE
+ *
+ * New structure:
+ *
+ * {
+ *   "user-sandhya": ["p101", "p103", "p102"],
+ *   "user-prasad": ["p104", "p102"],
+ *   "user-raghava": []
+ * }
+ *
+ * Each user has their own recently viewed list.
+ * ============================================================
+ */
+
 function readRecent() {
   try {
-    return (
-      JSON.parse(
-        localStorage.getItem(
-          RECENT_KEY,
-        ),
-      ) || []
+    const raw = localStorage.getItem(
+      RECENT_KEY,
     )
+
+    if (!raw) {
+      return {}
+    }
+
+    const parsed = JSON.parse(raw)
+
+    /*
+     * Old version stored:
+     *
+     * ["p101", "p102"]
+     *
+     * Do not share that global history
+     * between users.
+     */
+    if (Array.isArray(parsed)) {
+      return {}
+    }
+
+    if (
+      parsed &&
+      typeof parsed === 'object'
+    ) {
+      return parsed
+    }
+
+    return {}
   } catch {
-    return []
+    return {}
   }
 }
 
@@ -94,7 +131,7 @@ export function FavoritesProvider({
   const [favoritesByUser, setFavoritesByUser] =
     useState(() => readFavorites())
 
-  const [recent, setRecent] =
+  const [recentByUser, setRecentByUser] =
     useState(() => readRecent())
 
   /*
@@ -108,13 +145,27 @@ export function FavoritesProvider({
    * ==========================================================
    * CURRENT USER FAVORITES
    *
-   * Logged out  → []
-   * Logged in   → that user's favorites only
+   * Logged out → []
+   * Logged in  → that user's favorites only
    * ==========================================================
    */
   const favorites =
     isAuthenticated && userId
       ? favoritesByUser[userId] || []
+      : []
+
+  /*
+   * ==========================================================
+   * CURRENT USER RECENT
+   *
+   * Logged out → []
+   * New user   → []
+   * Logged in  → that user's recent history only
+   * ==========================================================
+   */
+  const recent =
+    isAuthenticated && userId
+      ? recentByUser[userId] || []
       : []
 
   /*
@@ -137,9 +188,9 @@ export function FavoritesProvider({
   useEffect(() => {
     localStorage.setItem(
       RECENT_KEY,
-      JSON.stringify(recent),
+      JSON.stringify(recentByUser),
     )
-  }, [recent])
+  }, [recentByUser])
 
   /*
    * ==========================================================
@@ -209,23 +260,41 @@ export function FavoritesProvider({
    * ==========================================================
    * RECENTLY VIEWED
    *
-   * Kept exactly as your existing global
-   * recent-history feature.
+   * Store history separately for each user.
+   * Keep only the latest 12 entries internally.
+   *
+   * Home displays only the latest 3.
    * ==========================================================
    */
   const trackRecent = useCallback(
     (id) => {
-      setRecent((previous) =>
-        [
+      /*
+       * Don't store a shared/global history
+       * for logged-out visitors.
+       */
+      if (!isAuthenticated || !userId) {
+        return
+      }
+
+      setRecentByUser((previous) => {
+        const current =
+          previous[userId] || []
+
+        const next = [
           id,
-          ...previous.filter(
+          ...current.filter(
             (propertyId) =>
               propertyId !== id,
           ),
-        ].slice(0, 12),
-      )
+        ].slice(0, 12)
+
+        return {
+          ...previous,
+          [userId]: next,
+        }
+      })
     },
-    [],
+    [isAuthenticated, userId],
   )
 
   /*
