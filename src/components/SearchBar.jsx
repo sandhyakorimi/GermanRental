@@ -120,6 +120,9 @@ export function SearchBar({
           relative
           z-[1000]
           w-full
+          max-w-full
+          min-w-0
+          overflow-visible
           rounded-[20px]
           border
           border-white/55
@@ -142,15 +145,17 @@ export function SearchBar({
         className="
           relative
           z-[1000]
-          flex
+          grid
           h-[52px]
           w-full
           min-w-0
+          grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_42px]
           items-stretch
           overflow-visible
           rounded-[15px]
           bg-white/15
           backdrop-blur-md
+          sm:flex
           sm:h-14
           sm:rounded-full
         "
@@ -386,8 +391,8 @@ function DropdownField({
           min-w-0
           w-full
           items-center
-          gap-1.5
-          px-2
+          gap-1
+          px-1.5
           text-left
           transition-colors
           duration-200
@@ -410,7 +415,7 @@ function DropdownField({
           <span
             className="
               truncate
-              text-[8px]
+              text-[7px]
               font-semibold
               uppercase
               tracking-[0.08em]
@@ -432,8 +437,9 @@ function DropdownField({
           >
             <span
               className="
+                min-w-0
                 truncate
-                text-[11px]
+                text-[10px]
                 font-semibold
                 text-[#102A43]
                 sm:text-sm
@@ -473,11 +479,17 @@ function DropdownField({
           role="listbox"
           className="
             absolute
-            left-0
+            left-1/2
             top-[calc(100%+8px)]
             z-40
             isolate
-            w-[min(240px,calc(100vw-24px))]
+            w-[160px]
+            max-w-[calc(100vw-24px)]
+            -translate-x-1/2
+            sm:left-0
+            sm:w-[240px]
+            sm:translate-x-0
+            overflow-hidden
             overflow-hidden
             rounded-2xl
             border
@@ -535,9 +547,10 @@ function DropdownField({
 
           <div
             className="
-              max-h-56
+              max-h-48
               overflow-y-auto
               overscroll-contain
+              sm:max-h-56
             "
           >
             {options.map((option) => {
