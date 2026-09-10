@@ -119,19 +119,19 @@ export default function Login() {
     {
       label: 'Admin',
       email:
-        'admin@deutschhome.de',
+        'admin@German Mitra.de',
       password: 'admin123',
     },
     {
       label: 'Landlord',
       email:
-        'landlord@deutschhome.de',
+        'landlord@German Mitra.de',
       password: 'landlord123',
     },
     {
       label: 'Tenant',
       email:
-        'tenant@deutschhome.de',
+        'tenant@German Mitra.de',
       password: 'tenant123',
     },
   ]
@@ -313,7 +313,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-sm text-ink-600">
-          New to DeutschHome?{' '}
+          New to German Mitra?{' '}
 
           <Link
             to="/register"
