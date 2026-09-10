@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
   Map as MapIcon,
@@ -55,6 +55,7 @@ const MAP_RADIUS_KM = 2
 
 export default function Properties() {
   const { listings } = useListings()
+  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
@@ -71,26 +72,24 @@ export default function Properties() {
   const [mapLocation, setMapLocation] = useState(null)
   const [selectedPropertyId, setSelectedPropertyId] = useState(null)
 
-  /*
-   * =========================================================
-   * LOCK PAGE SCROLL WHILE MOBILE MAP IS OPEN
-   * =========================================================
-   */
   useEffect(() => {
     if (!mapOpen) {
       return
     }
 
-    const bodyOverflow = document.body.style.overflow
-    const htmlOverflow =
+    const previousBodyOverflow =
+      document.body.style.overflow
+    const previousHtmlOverflow =
       document.documentElement.style.overflow
 
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
 
     return () => {
-      document.body.style.overflow = bodyOverflow
-      document.documentElement.style.overflow = htmlOverflow
+      document.body.style.overflow =
+        previousBodyOverflow
+      document.documentElement.style.overflow =
+        previousHtmlOverflow
     }
   }, [mapOpen])
 
@@ -507,8 +506,18 @@ export default function Properties() {
       lat: location.lat,
       lng: location.lng,
     })
-    setSelectedPropertyId(location.propertyId || null)
+
+    setSelectedPropertyId(
+      location.propertyId || null,
+    )
+
+    if (location.propertyId) {
+      navigate(
+        `/properties/${location.propertyId}`,
+      )
+    }
   }
+
   const handleMapViewport = (location) => {
     setMapLocation({
       lat: location.lat,
@@ -517,6 +526,7 @@ export default function Properties() {
 
     setSelectedPropertyId(null)
   }
+
   const clearMapLocation = () => {
     setMapLocation(null)
     setSelectedPropertyId(null)
@@ -856,15 +866,15 @@ export default function Properties() {
           className="
             fixed
             inset-x-0
-            top-16
-            bottom-0
-            z-[70]
+            top-[72px]
+            bottom-[88px]
+            z-40
             overflow-hidden
             bg-white
             lg:hidden
           "
         >
-          <div className="h-full min-h-0 overscroll-contain">
+          <div className="h-full min-h-0 overflow-hidden">
             <PropertyMap
               properties={baseFiltered}
               selectedLocation={
@@ -883,7 +893,7 @@ export default function Properties() {
           </div>
 
           {mapLocation && (
-            <div className="absolute bottom-20 left-3 right-3 z-[90] flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3 shadow-card">
+            <div className="absolute bottom-3 left-3 right-3 z-[90] flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3 shadow-card">
 
               <div>
                 <p className="text-sm font-semibold text-brand-700">
@@ -1082,7 +1092,7 @@ export default function Properties() {
           MOBILE FIXED MAP BUTTON
       ====================================================== */}
 
-      <div className="fixed bottom-5 left-1/2 z-[100] -translate-x-1/2 lg:hidden">
+      <div className="fixed bottom-4 left-1/2 z-[100] -translate-x-1/2 lg:hidden">
 
         <button
           type="button"
