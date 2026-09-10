@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
@@ -70,7 +70,29 @@ export default function Properties() {
   const [mapOpen, setMapOpen] = useState(false)
   const [mapLocation, setMapLocation] = useState(null)
   const [selectedPropertyId, setSelectedPropertyId] = useState(null)
-  const ignoreInitialMapViewport = useRef(true)
+
+  /*
+   * =========================================================
+   * LOCK PAGE SCROLL WHILE MOBILE MAP IS OPEN
+   * =========================================================
+   */
+  useEffect(() => {
+    if (!mapOpen) {
+      return
+    }
+
+    const bodyOverflow = document.body.style.overflow
+    const htmlOverflow =
+      document.documentElement.style.overflow
+
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = bodyOverflow
+      document.documentElement.style.overflow = htmlOverflow
+    }
+  }, [mapOpen])
 
   /*
    * =========================================================
@@ -488,18 +510,13 @@ export default function Properties() {
     setSelectedPropertyId(location.propertyId || null)
   }
   const handleMapViewport = (location) => {
-  if (ignoreInitialMapViewport.current) {
-    ignoreInitialMapViewport.current = false
-    return
+    setMapLocation({
+      lat: location.lat,
+      lng: location.lng,
+    })
+
+    setSelectedPropertyId(null)
   }
-
-  setMapLocation({
-    lat: location.lat,
-    lng: location.lng,
-  })
-
-  setSelectedPropertyId(null)
-}
   const clearMapLocation = () => {
     setMapLocation(null)
     setSelectedPropertyId(null)
@@ -835,28 +852,38 @@ export default function Properties() {
       ====================================================== */}
 
       {mapOpen && (
-        <div className="mt-4 mb-5 lg:hidden">
-
-          <div className="h-[65vh] min-h-[420px]">
+        <div
+          className="
+            fixed
+            inset-x-0
+            top-16
+            bottom-0
+            z-[70]
+            overflow-hidden
+            bg-white
+            lg:hidden
+          "
+        >
+          <div className="h-full min-h-0 overscroll-contain">
             <PropertyMap
-  properties={baseFiltered}
-  selectedLocation={
-    mapLocation
-  }
-  onLocationSelect={
-    handleMapLocation
-  }
-  onViewportChange={
-    handleMapViewport
-  }
-  radiusKm={
-    MAP_RADIUS_KM
-  }
-/>
+              properties={baseFiltered}
+              selectedLocation={
+                mapLocation
+              }
+              onLocationSelect={
+                handleMapLocation
+              }
+              onViewportChange={
+                handleMapViewport
+              }
+              radiusKm={
+                MAP_RADIUS_KM
+              }
+            />
           </div>
 
           {mapLocation && (
-            <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+            <div className="absolute bottom-20 left-3 right-3 z-[90] flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3 shadow-card">
 
               <div>
                 <p className="text-sm font-semibold text-brand-700">
@@ -890,7 +917,12 @@ export default function Properties() {
           MAIN CONTENT
       ====================================================== */}
 
-      <div className="mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-6">
+      <div
+        className={classNames(
+          'mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-6',
+          mapOpen && 'hidden lg:grid',
+        )}
+      >
 
         {/* ===================================================
             PROPERTY LIST
@@ -1050,7 +1082,7 @@ export default function Properties() {
           MOBILE FIXED MAP BUTTON
       ====================================================== */}
 
-      <div className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 lg:hidden">
+      <div className="fixed bottom-5 left-1/2 z-[100] -translate-x-1/2 lg:hidden">
 
         <button
           type="button"

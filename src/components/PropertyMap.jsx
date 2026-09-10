@@ -97,16 +97,34 @@ function MapEvents({
   onLocationSelect,
   onViewportChange,
 }) {
-  const userInteractingRef =
-    useRef(false)
+  const userInteractionRef = useRef(false)
 
   useMapEvents({
-    zoomstart() {
-      userInteractingRef.current = true
+    dragstart() {
+      userInteractionRef.current = true
     },
 
-    dragstart() {
-      userInteractingRef.current = true
+    zoomstart() {
+      userInteractionRef.current = true
+    },
+
+    moveend(event) {
+      if (!userInteractionRef.current) {
+        return
+      }
+
+      userInteractionRef.current = false
+
+      if (!onViewportChange) {
+        return
+      }
+
+      const center = event.target.getCenter()
+
+      onViewportChange({
+        lat: center.lat,
+        lng: center.lng,
+      })
     },
 
     click(event) {
@@ -116,78 +134,60 @@ function MapEvents({
         propertyId: null,
       })
     },
-
-    moveend(event) {
-      if (!userInteractingRef.current) {
-        return
-      }
-
-      userInteractingRef.current = false
-
-      const center =
-        event.target.getCenter()
-
-      onViewportChange({
-        lat: center.lat,
-        lng: center.lng,
-      })
-    },
   })
 
   return null
 }
 
-function FitMapToProperties({
-  properties,
-}) {
+function InvalidateMapSize() {
   const map = useMap()
 
   useEffect(() => {
-    const validProperties =
-      properties.filter((property) => {
-        if (!property.coordinates) {
-          return false
-        }
+    const frame = requestAnimationFrame(() => {
+      map.invalidateSize({ pan: false })
+    })
 
-        const lat = Number(
-          property.coordinates.lat,
-        )
+    return () => cancelAnimationFrame(frame)
+  }, [map])
 
-        const lng = Number(
-          property.coordinates.lng,
-        )
+  return null
+}
 
-        return (
-          Number.isFinite(lat) &&
-          Number.isFinite(lng)
-        )
-      })
+function FitMapToProperties({ properties }) {
+  const map = useMap()
+
+  useEffect(() => {
+    const validProperties = properties.filter((property) => {
+      if (!property.coordinates) return false
+
+      const lat = Number(property.coordinates.lat)
+      const lng = Number(property.coordinates.lng)
+
+      return (
+        Number.isFinite(lat) &&
+        Number.isFinite(lng)
+      )
+    })
 
     if (!validProperties.length) {
       map.setView(
         GERMANY_CENTER,
         DEFAULT_ZOOM,
       )
-
       return
     }
 
     if (validProperties.length === 1) {
-      const property =
-        validProperties[0]
+      const property = validProperties[0]
 
       map.setView(
         [
-          Number(
-            property.coordinates.lat,
-          ),
-          Number(
-            property.coordinates.lng,
-          ),
+          Number(property.coordinates.lat),
+          Number(property.coordinates.lng),
         ],
         14,
         {
-          animate: true,
+          animate: false,
         },
       )
 
@@ -195,22 +195,16 @@ function FitMapToProperties({
     }
 
     const bounds = L.latLngBounds(
-      validProperties.map(
-        (property) => [
-          Number(
-            property.coordinates.lat,
-          ),
-          Number(
-            property.coordinates.lng,
-          ),
-        ],
-      ),
+      validProperties.map((property) => [
+        Number(property.coordinates.lat),
+        Number(property.coordinates.lng),
+      ]),
     )
 
     map.fitBounds(bounds, {
       padding: [60, 60],
       maxZoom: 14,
-      animate: true,
+      animate: false,
     })
   }, [map, properties])
 
@@ -225,30 +219,35 @@ export function PropertyMap({
   radiusKm = 2,
 }) {
   return (
-    <div className="h-full min-h-[560px] overflow-hidden rounded-2xl border border-ink-200 bg-ink-100 shadow-card">
+    <div
+      className="relative z-0 h-full min-h-0 overflow-hidden rounded-2xl border border-ink-200 bg-ink-100 shadow-card [touch-action:none]"
+      style={{ overscrollBehavior: 'contain' }}
+    >
       <MapContainer
         center={GERMANY_CENTER}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
         zoomControl={true}
-        className="h-full min-h-[560px] w-full"
+        doubleClickZoom={true}
+        touchZoom={true}
+        dragging={true}
+        keyboard={true}
+        className="h-full min-h-0 w-full"
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        <InvalidateMapSize />
+
         <FitMapToProperties
           properties={properties}
         />
 
         <MapEvents
-          onLocationSelect={
-            onLocationSelect
-          }
-          onViewportChange={
-            onViewportChange
-          }
+          onLocationSelect={onLocationSelect}
+          onViewportChange={onViewportChange}
         />
 
         {/* PROPERTY HOME MARKERS */}
@@ -274,8 +273,7 @@ export function PropertyMap({
           }
 
           const isSelected =
-            selectedLocation?.propertyId ===
-            property.id
+            selectedLocation?.propertyId === property.id
 
           return (
             <Marker
@@ -293,8 +291,7 @@ export function PropertyMap({
                   onLocationSelect({
                     lat,
                     lng,
-                    propertyId:
-                      property.id,
+                    propertyId: property.id,
                   })
                 },
               }}
