@@ -845,9 +845,9 @@ export default function Properties() {
         <div className="mt-4 mb-5 lg:hidden">
           <div
             className="
-              h-[calc(100svh-230px)]
-              min-h-[420px]
-              max-h-[680px]
+              h-[clamp(320px,55svh,520px)]
+              min-h-[320px]
+              max-h-[520px]
               overflow-hidden
               rounded-2xl
               touch-none
@@ -1009,7 +1009,7 @@ export default function Properties() {
 
         <aside className="hidden lg:block">
 
-          <div className="sticky top-24 h-[calc(100vh-120px)]">
+          <div className="sticky top-24 h-[calc(100vh-160px)]">
 
             <PropertyMap
   properties={baseFiltered}

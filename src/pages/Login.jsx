@@ -17,7 +17,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Logo } from '../components/Logo'
-import standaloneIcon from '../assets/Standaloneicon.png'
+import appIcon from '../assets/german-mitra-app-icon.png'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function Login() {
@@ -357,7 +357,7 @@ export function AuthLayout({
         <div className="hidden bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <span className="inline-flex items-center gap-2">
             <img
-              src={standaloneIcon}
+              src={appIcon}
               alt="German Mitra"
               className="h-9 w-9 object-contain"
             />
@@ -401,7 +401,7 @@ export function AuthLayout({
           <div className="lg:hidden">
             <span className="inline-flex items-center gap-2">
               <img
-                src={standaloneIcon}
+                src={appIcon}
                 alt="German Mitra"
                 className="h-9 w-9 object-contain"
               />
