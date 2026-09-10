@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Logo } from '../components/Logo'
+import standaloneIcon from '../assets/Standaloneicon.png'
 import GoogleSignInButton from '../components/GoogleSignInButton'
 
 export default function Login() {
@@ -354,7 +355,16 @@ export function AuthLayout({
       <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl shadow-card ring-1 ring-ink-100 lg:grid-cols-2">
 
         <div className="hidden bg-gradient-to-br from-brand-600 to-brand-800 p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <Logo className="[&_span:last-child]:text-white [&_.text-brand-600]:text-white" />
+          <span className="inline-flex items-center gap-2">
+            <img
+              src={standaloneIcon}
+              alt="German Mitra"
+              className="h-9 w-9 object-contain"
+            />
+            <span className="text-lg font-extrabold tracking-tight text-white">
+              GermanMitra
+            </span>
+          </span>
 
           <div>
             <h2 className="text-3xl font-extrabold leading-tight text-balance">
@@ -389,7 +399,16 @@ export function AuthLayout({
 
         <div className="bg-white p-6 sm:p-10">
           <div className="lg:hidden">
-            <Logo />
+            <span className="inline-flex items-center gap-2">
+              <img
+                src={standaloneIcon}
+                alt="German Mitra"
+                className="h-9 w-9 object-contain"
+              />
+              <span className="text-lg font-extrabold tracking-tight text-ink-900">
+                German<span className="text-brand-600">Mitra</span>
+              </span>
+            </span>
           </div>
 
           <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-ink-900 lg:mt-0">
