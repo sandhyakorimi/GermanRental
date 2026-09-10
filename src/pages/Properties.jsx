@@ -72,26 +72,6 @@ export default function Properties() {
   const [mapLocation, setMapLocation] = useState(null)
   const [selectedPropertyId, setSelectedPropertyId] = useState(null)
 
-  useEffect(() => {
-    if (!mapOpen) {
-      return
-    }
-
-    const previousBodyOverflow =
-      document.body.style.overflow
-    const previousHtmlOverflow =
-      document.documentElement.style.overflow
-
-    document.body.style.overflow = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
-
-    return () => {
-      document.body.style.overflow =
-        previousBodyOverflow
-      document.documentElement.style.overflow =
-        previousHtmlOverflow
-    }
-  }, [mapOpen])
 
   /*
    * =========================================================
@@ -862,19 +842,17 @@ export default function Properties() {
       ====================================================== */}
 
       {mapOpen && (
-        <div
-          className="
-            fixed
-            inset-x-0
-            top-[72px]
-            bottom-[88px]
-            z-40
-            overflow-hidden
-            bg-white
-            lg:hidden
-          "
-        >
-          <div className="h-full min-h-0 overflow-hidden">
+        <div className="mt-4 mb-5 lg:hidden">
+          <div
+            className="
+              h-[calc(100svh-230px)]
+              min-h-[420px]
+              max-h-[680px]
+              overflow-hidden
+              rounded-2xl
+              touch-none
+            "
+          >
             <PropertyMap
               properties={baseFiltered}
               selectedLocation={
@@ -893,7 +871,7 @@ export default function Properties() {
           </div>
 
           {mapLocation && (
-            <div className="absolute bottom-3 left-3 right-3 z-[90] flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3 shadow-card">
+            <div className="mt-3 flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
 
               <div>
                 <p className="text-sm font-semibold text-brand-700">
@@ -927,12 +905,7 @@ export default function Properties() {
           MAIN CONTENT
       ====================================================== */}
 
-      <div
-        className={classNames(
-          'mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-6',
-          mapOpen && 'hidden lg:grid',
-        )}
-      >
+      <div className="mt-5 lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-6">
 
         {/* ===================================================
             PROPERTY LIST
