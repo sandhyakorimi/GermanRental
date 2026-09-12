@@ -179,7 +179,7 @@ export default function Home() {
         <div className="container-page pt-24 sm:pt-24 md:pt-24 lg:pt-28 pb-16">
           <div className="mx-auto max-w-3xl text-center">
             <span className="section-eyebrow inline-flex items-center gap-1.5 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 shadow-soft backdrop-blur-md transition-all duration-300 hover:shadow-glass animate-fade-up">
-              <MapPin className="h-3.5 w-3.5" /> Made for Indians moving to Germany
+              <MapPin className="h-3.5 w-3.5" /> FIND YOUR HOME IN GERMANY
             </span>
 
             <h1

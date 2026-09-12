@@ -82,19 +82,93 @@ export default function PropertyDetails() {
   const handleInquiry = (e) => {
     e.preventDefault()
     setSubmitting(true)
+
     setTimeout(() => {
+      const tenantName =
+        form.name || user?.name || 'Guest'
+
+      const tenantEmail =
+        form.email || user?.email || ''
+
+      const landlordId =
+        property.landlordId ||
+        property.landlord?.id ||
+        property.landlord?.email ||
+        property.landlord?.name ||
+        ''
+
+      const landlordEmail =
+        property.landlordEmail ||
+        property.landlord?.email ||
+        ''
+
+      const landlordWhatsapp =
+        property.landlord?.whatsapp ||
+        property.whatsapp ||
+        ''
+
+      const propertyUrl =
+        `${import.meta.env.VITE_APP_URL || window.location.origin}/properties/${property.id}`
+
       addInquiry({
         propertyId: property.id,
         propertyTitle: property.title,
-        tenantName: form.name || (user?.name ?? 'Guest'),
-        tenantEmail: form.email || (user?.email ?? ''),
+        tenantId: user?.id || '',
+        tenantName,
+        tenantEmail,
         message: form.message,
         moveDate: form.moveDate,
+        landlordId,
+        landlordName: property.landlord?.name || '',
+        landlordEmail,
+        landlordWhatsapp,
       })
+
       setSubmitting(false)
       setInquiryOpen(false)
       setForm({ name: '', email: '', message: '', moveDate: '' })
-      toast.success('Inquiry sent to the landlord. They will be in touch.')
+
+      const whatsappNumber = String(
+        landlordWhatsapp,
+      ).replace(/[^0-9]/g, '')
+
+      if (whatsappNumber) {
+        const whatsappMessage = [
+          `Hello ${property.landlord?.name || 'Landlord'},`,
+          '',
+          'I am interested in this property.',
+          '',
+          `Property: ${property.title}`,
+          `Location: ${property.address || `${property.district}, ${property.city}`}`,
+          `Rent: ${formatEUR(property.rent)}/month`,
+          `Available from: ${formatDate(property.available)}`,
+          `Move-in date: ${form.moveDate || 'Not specified'}`,
+          '',
+          `Message: ${form.message}`,
+          '',
+          'Property link:',
+          propertyUrl,
+          '',
+          `My name: ${tenantName}`,
+          `My email: ${tenantEmail}`,
+        ].join('\n')
+
+        const whatsappUrl =
+          `https://wa.me/${whatsappNumber}?text=` +
+          encodeURIComponent(whatsappMessage)
+
+        window.open(
+          whatsappUrl,
+          '_blank',
+          'noopener,noreferrer',
+        )
+      }
+
+      toast.success(
+        whatsappNumber
+          ? 'Inquiry saved. WhatsApp opened with the inquiry details.'
+          : 'Inquiry sent to the landlord. They will be in touch.',
+      )
     }, 600)
   }
 

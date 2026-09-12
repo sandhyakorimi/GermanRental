@@ -494,7 +494,7 @@ function DropdownField({
             rounded-2xl
             border
             border-white/70
-            bg-white/90
+            bg-white/100
             p-1.5
             backdrop-blur-sm
             shadow-[0_20px_50px_rgba(0,59,99,0.20)]

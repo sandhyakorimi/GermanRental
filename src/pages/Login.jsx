@@ -120,19 +120,19 @@ export default function Login() {
     {
       label: 'Admin',
       email:
-        'admin@German Mitra.de',
+        'admin@GermanMitra.de',
       password: 'admin123',
     },
     {
       label: 'Landlord',
       email:
-        'landlord@German Mitra.de',
+        'landlord@GermanMitra.de',
       password: 'landlord123',
     },
     {
       label: 'Tenant',
       email:
-        'tenant@German Mitra.de',
+        'tenant@GermanMitra.de',
       password: 'tenant123',
     },
   ]

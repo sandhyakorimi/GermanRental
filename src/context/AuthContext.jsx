@@ -17,40 +17,37 @@ const SEED_USERS = [
    * ORIGINAL DEMO ACCOUNTS
    */
   {
-    id: 'admin-1',
-    name: 'Admin',
-    email: 'admin@deutschhome.de',
-    password: 'admin123',
-    role: 'admin',
-    avatar:
-      'https://i.pravatar.cc/150?img=5',
-    city: 'Berlin',
-    createdAt: '2025-01-10',
-  },
+  id: 'admin-1',
+  name: 'Admin',
+  email: 'admin@GermanMitra.de',
+  password: 'admin123',
+  role: 'admin',
+  avatar: 'https://i.pravatar.cc/150?img=5',
+  city: 'Berlin',
+  createdAt: '2025-01-10',
+},
 
-  {
-    id: 'landlord-1',
-    name: 'Lars Becker',
-    email: 'landlord@deutschhome.de',
-    password: 'landlord123',
-    role: 'landlord',
-    avatar:
-      'https://i.pravatar.cc/150?img=12',
-    city: 'Berlin',
-    createdAt: '2025-02-02',
-  },
-
-  {
-    id: 'tenant-1',
-    name: 'Priya Sharma',
-    email: 'tenant@deutschhome.de',
-    password: 'tenant123',
-    role: 'tenant',
-    avatar:
-      'https://i.pravatar.cc/150?img=32',
-    city: 'Munich',
-    createdAt: '2025-03-15',
-  },
+{
+  id: 'landlord-1',
+  name: 'Lars Becker',
+  email: 'landlord@GermanMitra.de',
+  password: 'landlord123',
+  role: 'landlord',
+  avatar: 'https://i.pravatar.cc/150?img=12',
+  city: 'Berlin',
+  createdAt: '2025-02-02',
+},
+ 
+{
+  id: 'tenant-1',
+  name: 'Priya Sharma',
+  email: 'tenant@GermanMitra.de',
+  password: 'tenant123',
+  role: 'tenant',
+  avatar: 'https://i.pravatar.cc/150?img=32',
+  city: 'Munich',
+  createdAt: '2025-03-15',
+},
 
   /*
    * YOUR NEW DEMO ACCOUNTS
