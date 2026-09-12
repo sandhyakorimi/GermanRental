@@ -150,99 +150,148 @@ export default function Home() {
 
   return (
     <div>
+      <style>{`
+        .home-hero {
+          position: relative;
+        }
+
+        .home-hero-image {
+          display: block;
+          width: 100%;
+          height: auto;
+        }
+
+        .home-hero-content {
+          position: absolute;
+          inset: 0;
+        }
+
+        @media (max-width: 1023px) {
+          .home-hero {
+            min-height: 0;
+          }
+
+          .home-hero-image {
+            height: 600px;
+            object-fit: cover;
+            object-position: center;
+          }
+
+          .home-hero-content {
+            position: absolute;
+            inset: 0;
+          }
+        }
+
+        @media (max-width: 639px) {
+          .home-hero-image {
+            height: 540px;
+            object-fit: cover;
+            object-position: center;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .home-hero-image {
+            height: auto;
+            min-height: 0;
+            object-fit: contain;
+            object-position: center top;
+          }
+        }
+      `}</style>
+
       {/* Hero */}
-      <section className="relative -mt-20 overflow-visible">
-        {/* Background image */}
-        <div className="absolute inset-0 -z-20 overflow-hidden">
+      <section className="home-hero relative left-1/2 -mt-20 w-screen -translate-x-1/2 overflow-hidden">
+        {/* Original image: natural full composition on large screens */}
+        <img
+          src="/hero-background2.jpeg"
+          alt=""
+          aria-hidden="true"
+          className="home-hero-image"
+        />
+
+        {/* Soft decorative overlays */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl animate-float" />
+
           <div
-            className="absolute inset-0 bg-cover bg-no-repeat"
+            className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl animate-float"
             style={{
-              backgroundImage:
-                "url('/hero-background2.jpeg')",
-              backgroundPosition:
-                '30% center',
+              animationDelay: '1.5s',
             }}
           />
-
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl animate-float" />
-
-            <div
-              className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl animate-float"
-              style={{
-                animationDelay: '1.5s',
-              }}
-            />
-          </div>
         </div>
 
-        <div className="container-page pt-24 sm:pt-24 md:pt-24 lg:pt-28 pb-16">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="section-eyebrow inline-flex items-center gap-1.5 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 shadow-soft backdrop-blur-md transition-all duration-300 hover:shadow-glass animate-fade-up">
-              <MapPin className="h-3.5 w-3.5" /> FIND YOUR HOME IN GERMANY
-            </span>
-
-            <h1
-              className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-brand-700 sm:text-5xl lg:text-6xl text-balance animate-fade-up"
-              style={{
-                animationDelay: '80ms',
-              }}
-            >
-              Find your German{' '}
-              <span className="bg-gradient-to-r from-accent-600 to-accent-500 bg-clip-text text-transparent">
-                home
+        <div className="home-hero-content pointer-events-none">
+          <div className="container-page pointer-events-auto pt-24 sm:pt-24 md:pt-24 lg:pt-28 pb-10 sm:pb-12 lg:pb-16">
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="section-eyebrow inline-flex items-center gap-1.5 rounded-full border border-white/60 bg-white/60 px-4 py-1.5 shadow-soft backdrop-blur-md transition-all duration-300 hover:shadow-glass animate-fade-up">
+                <MapPin className="h-3.5 w-3.5" /> FIND YOUR HOME IN GERMANY
               </span>
-              , the easy way.
-            </h1>
 
-            <p
-              className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-ink-600 animate-fade-up"
+              <h1
+                className="mt-4 text-4xl font-extrabold leading-[1.1] tracking-tight text-brand-700 sm:text-5xl lg:text-6xl text-balance animate-fade-up"
+                style={{
+                  animationDelay: '80ms',
+                }}
+              >
+                Find your German{' '}
+                <span className="bg-gradient-to-r from-accent-600 to-accent-500 bg-clip-text text-transparent">
+                  home
+                </span>
+                , the easy way.
+              </h1>
+
+              <p
+                className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-ink-600 animate-fade-up"
+                style={{
+                  animationDelay: '160ms',
+                }}
+              >
+                Browse verified rentals across Berlin, Munich, Frankfurt and more.
+                Understand the deposit, utilities and rental conditions before you
+                ever contact a landlord.
+              </p>
+            </div>
+
+            <div
+              className="relative z-40 mx-auto mt-8 max-w-4xl animate-fade-up"
               style={{
-                animationDelay: '160ms',
+                animationDelay: '240ms',
               }}
             >
-              Browse verified rentals across Berlin, Munich, Frankfurt and more.
-              Understand the deposit, utilities and rental conditions before you
-              ever contact a landlord.
-            </p>
-          </div>
-
-          <div
-            className="relative z-40 mx-auto mt-8 max-w-4xl animate-fade-up"
-            style={{
-              animationDelay: '240ms',
-            }}
-          >
-            <div className="rounded-3xl border border-white/70 bg-white/30 p-2 shadow-glass backdrop-blur-md transition-all duration-300 hover:shadow-glassHover">
-              <SearchBar variant="hero" />
+              <div className="rounded-3xl border border-white/70 bg-white/30 p-2 shadow-glass backdrop-blur-md transition-all duration-300 hover:shadow-glassHover">
+                <SearchBar variant="hero" />
+              </div>
             </div>
-          </div>
 
-          <div
-            className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500 animate-fade-in"
-            style={{
-              animationDelay: '320ms',
-            }}
-          >
-            <span className="font-semibold uppercase tracking-wide text-ink-400">
-              Popular:
-            </span>
+            <div
+              className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500 animate-fade-in"
+              style={{
+                animationDelay: '320ms',
+              }}
+            >
+              <span className="font-semibold uppercase tracking-wide text-ink-400">
+                Popular:
+              </span>
 
-            {[
-              'Berlin',
-              'Munich',
-              'Frankfurt',
-              'Hamburg',
-              'Cologne',
-            ].map((c) => (
-              <Link
-                key={c}
-                to={`/properties?city=${c}`}
-                className="rounded-full border border-white/80 bg-white/90 px-3 py-1 font-medium text-ink-700 shadow-soft transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:border-accent-300/70 hover:bg-white hover:text-accent-600 hover:shadow-glass"
-              >
-                {c}
-              </Link>
-            ))}
+              {[
+                'Berlin',
+                'Munich',
+                'Frankfurt',
+                'Hamburg',
+                'Cologne',
+              ].map((c) => (
+                <Link
+                  key={c}
+                  to={`/properties?city=${c}`}
+                  className="rounded-full border border-white/80 bg-white/90 px-3 py-1 font-medium text-ink-700 shadow-soft transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:border-accent-300/70 hover:bg-white hover:text-accent-600 hover:shadow-glass"
+                >
+                  {c}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
