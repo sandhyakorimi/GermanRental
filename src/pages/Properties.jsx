@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown,
   Map as MapIcon,
@@ -55,7 +55,6 @@ const MAP_RADIUS_KM = 2
 
 export default function Properties() {
   const { listings } = useListings()
-  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
 
   const [loading, setLoading] = useState(true)
@@ -71,7 +70,7 @@ export default function Properties() {
   const [mapOpen, setMapOpen] = useState(false)
   const [mapLocation, setMapLocation] = useState(null)
   const [selectedPropertyId, setSelectedPropertyId] = useState(null)
-
+  const ignoreInitialMapViewport = useRef(true)
 
   /*
    * =========================================================
@@ -486,60 +485,21 @@ export default function Properties() {
       lat: location.lat,
       lng: location.lng,
     })
-
-    setSelectedPropertyId(null)
+    setSelectedPropertyId(location.propertyId || null)
   }
-
-  const handleMapPropertyPopupClick = (propertyId) => {
-    if (!propertyId) {
-      return
-    }
-
-    // Remove only the temporary map-radius filter so the clicked property
-    // can be shown in the existing left-side property list.
-    setMapLocation(null)
-    setSelectedPropertyId(propertyId)
-  }
-
-  useEffect(() => {
-    if (!selectedPropertyId) {
-      return
-    }
-
-    const timer = window.setTimeout(() => {
-      const propertyCard = document.getElementById(
-        `property-card-${selectedPropertyId}`,
-      )
-
-      if (!propertyCard) {
-        return
-      }
-
-      // Position the selected card clearly below the fixed navbar.
-      // This avoids scrollIntoView() centering the page around the card.
-      const navbarOffset = 96
-      const cardTop =
-        propertyCard.getBoundingClientRect().top +
-        window.scrollY
-
-      window.scrollTo({
-        top: Math.max(0, cardTop - navbarOffset),
-        behavior: 'smooth',
-      })
-    }, 300)
-
-    return () => window.clearTimeout(timer)
-  }, [selectedPropertyId])
-
   const handleMapViewport = (location) => {
-    setMapLocation({
-      lat: location.lat,
-      lng: location.lng,
-    })
-
-    setSelectedPropertyId(null)
+  if (ignoreInitialMapViewport.current) {
+    ignoreInitialMapViewport.current = false
+    return
   }
 
+  setMapLocation({
+    lat: location.lat,
+    lng: location.lng,
+  })
+
+  setSelectedPropertyId(null)
+}
   const clearMapLocation = () => {
     setMapLocation(null)
     setSelectedPropertyId(null)
@@ -876,34 +836,23 @@ export default function Properties() {
 
       {mapOpen && (
         <div className="mt-4 mb-5 lg:hidden">
-          <div
-            className="
-              h-[clamp(320px,55svh,520px)]
-              min-h-[320px]
-              max-h-[520px]
-              overflow-hidden
-              rounded-2xl
-              touch-none
-            "
-          >
+
+          <div className="h-[65vh] min-h-[420px]">
             <PropertyMap
-              properties={baseFiltered}
-              selectedLocation={
-                mapLocation
-              }
-              onLocationSelect={
-                handleMapLocation
-              }
-              onPropertyPopupClick={
-                handleMapPropertyPopupClick
-              }
-              onViewportChange={
-                handleMapViewport
-              }
-              radiusKm={
-                MAP_RADIUS_KM
-              }
-            />
+  properties={baseFiltered}
+  selectedLocation={
+    mapLocation
+  }
+  onLocationSelect={
+    handleMapLocation
+  }
+  onViewportChange={
+    handleMapViewport
+  }
+  radiusKm={
+    MAP_RADIUS_KM
+  }
+/>
           </div>
 
           {mapLocation && (
@@ -950,7 +899,7 @@ export default function Properties() {
         <div className="min-w-0">
 
           {loading ? (
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6">
 
               {Array.from({
                 length: 4,
@@ -1012,22 +961,22 @@ export default function Properties() {
 
           ) : (
 
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6">
 
               {filtered.map(
                 (
                   property,
                   index,
                 ) => (
-                  <div
-                    key={property.id}
-                    id={`property-card-${property.id}`}
-                  >
-                    <PropertyCard
-                      property={property}
-                      index={index}
-                    />
-                  </div>
+                  <PropertyCard
+                    key={
+                      property.id
+                    }
+                    property={
+                      property
+                    }
+                    index={index}
+                  />
                 ),
               )}
 
@@ -1045,7 +994,7 @@ export default function Properties() {
 
         <aside className="hidden lg:block">
 
-          <div className="sticky top-24 h-[calc(100vh-160px)]">
+          <div className="sticky top-24 h-[calc(100vh-120px)]">
 
             <PropertyMap
   properties={baseFiltered}
@@ -1054,9 +1003,6 @@ export default function Properties() {
   }
   onLocationSelect={
     handleMapLocation
-  }
-  onPropertyPopupClick={
-    handleMapPropertyPopupClick
   }
   onViewportChange={
     handleMapViewport
@@ -1104,7 +1050,7 @@ export default function Properties() {
           MOBILE FIXED MAP BUTTON
       ====================================================== */}
 
-      <div className="fixed bottom-4 left-1/2 z-[100] -translate-x-1/2 lg:hidden">
+      <div className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 lg:hidden">
 
         <button
           type="button"

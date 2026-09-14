@@ -231,7 +231,7 @@ export function Navbar() {
           TOP NAVBAR
       ================================================== */}
 
-      <nav className="mx-auto flex min-h-[72px] w-full max-w-[1500px] items-center gap-4 px-5 lg:px-8">
+     <nav className="flex min-h-[72px] w-full items-center gap-4 px-4 sm:px-6 lg:px-8 2xl:px-10">
 
         {/* LOGO */}
 
@@ -585,7 +585,7 @@ export function Navbar() {
 
       {mobileOpen && (
         <div className="border-t border-white/40 bg-white/80 backdrop-blur-xl md:hidden animate-fade-in">
-          <div className="mx-auto max-w-[1500px] space-y-1 px-5 py-4">
+          <div className="w-full space-y-1 px-4 py-4 sm:px-6 lg:px-8">
 
             {/* MOBILE HOME */}
 

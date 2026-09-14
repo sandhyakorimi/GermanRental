@@ -352,7 +352,7 @@ export default function Home() {
           />
 
           {/* DESKTOP */}
-          <div className="mt-8 hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 hidden gap-6 sm:grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
             {recentHomes.map(
               (p, i) => (
                 <PropertyCard
@@ -502,7 +502,7 @@ export default function Home() {
           }
         />
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-6">
           {featured.map(
             (p, i) => (
               <PropertyCard
@@ -524,7 +524,7 @@ export default function Home() {
             description="Average rents, listings and a quick guide to each city."
           />
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-5">
             {GERMAN_CITIES.slice(
               0,
               8,
@@ -592,7 +592,7 @@ export default function Home() {
           align="center"
         />
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-6">
           {[
             {
               icon: (
