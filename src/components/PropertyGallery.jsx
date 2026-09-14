@@ -7,24 +7,35 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
   const galleryRef = useRef(null)
 
   const goTo = (index, behavior = 'smooth') => {
-    if (!galleryRef.current || !validImages.length) return
+    const gallery = galleryRef.current
+    if (!gallery || !validImages.length) return
 
     const nextIndex = Math.max(
       0,
       Math.min(index, validImages.length - 1),
     )
 
-    galleryRef.current.scrollTo({
-      left: galleryRef.current.clientWidth * nextIndex,
+    const slideWidth = gallery.clientWidth
+
+    gallery.scrollTo({
+      left: slideWidth * nextIndex,
       behavior,
     })
 
     setActiveIndex(nextIndex)
   }
 
-  const handlePrevious = () => goTo(activeIndex - 1)
-  const handleNext = () => goTo(activeIndex + 1)
+  const handlePrevious = () => {
+    goTo(activeIndex - 1)
+  }
 
+  const handleNext = () => {
+    goTo(activeIndex + 1)
+  }
+
+  /*
+   * Keep active dot synchronized with manual touch/swipe.
+   */
   useEffect(() => {
     const gallery = galleryRef.current
     if (!gallery || validImages.length <= 1) return
@@ -35,10 +46,14 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
       cancelAnimationFrame(frameId)
 
       frameId = requestAnimationFrame(() => {
-        const width = gallery.clientWidth
-        if (!width) return
+        const slideWidth = gallery.clientWidth
 
-        const index = Math.round(gallery.scrollLeft / width)
+        if (!slideWidth) return
+
+        const index = Math.round(
+          gallery.scrollLeft / slideWidth,
+        )
+
         const safeIndex = Math.max(
           0,
           Math.min(index, validImages.length - 1),
@@ -50,7 +65,9 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
       })
     }
 
-    gallery.addEventListener('scroll', handleScroll, { passive: true })
+    gallery.addEventListener('scroll', handleScroll, {
+      passive: true,
+    })
 
     return () => {
       gallery.removeEventListener('scroll', handleScroll)
@@ -58,20 +75,37 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
     }
   }, [validImages.length])
 
+  /*
+   * Recalculate position when screen width changes.
+   * This prevents the image from becoming partially shifted
+   * after mobile browser resize/orientation changes.
+   */
   useEffect(() => {
     const handleResize = () => {
-      if (!galleryRef.current) return
+      const gallery = galleryRef.current
 
-      galleryRef.current.scrollTo({
-        left: galleryRef.current.clientWidth * activeIndex,
+      if (!gallery) return
+
+      const slideWidth = gallery.clientWidth
+
+      if (!slideWidth) return
+
+      gallery.scrollTo({
+        left: slideWidth * activeIndex,
         behavior: 'auto',
       })
     }
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [activeIndex])
 
+  /*
+   * Make sure activeIndex is always valid.
+   */
   useEffect(() => {
     if (activeIndex >= validImages.length) {
       setActiveIndex(Math.max(0, validImages.length - 1))
@@ -80,26 +114,37 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
 
   if (!validImages.length) {
     return (
-      <div className="flex aspect-[16/10] items-center justify-center overflow-hidden rounded-3xl bg-ink-100 text-sm text-ink-500">
+      <div className="flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-3xl bg-ink-100 text-sm text-ink-500">
         No property photos available
       </div>
     )
   }
 
   return (
-    <div className="w-full">
-      <div className="relative overflow-hidden rounded-3xl bg-ink-100 shadow-card">
+    <div className="w-full min-w-0">
+      <div
+        className="
+          relative
+          w-full
+          min-w-0
+          overflow-hidden
+          rounded-3xl
+          bg-ink-100
+          shadow-card
+        "
+      >
         <div
           ref={galleryRef}
           className="
             flex
             w-full
-            overflow-x-auto
+            min-w-0
             snap-x
             snap-mandatory
+            overflow-x-auto
+            overscroll-x-contain
             scroll-smooth
             touch-pan-x
-            overscroll-x-contain
             scrollbar-none
             [-ms-overflow-style:none]
             [scrollbar-width:none]
@@ -108,18 +153,36 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
+            scrollPadding: 0,
           }}
           aria-label="Property photos"
         >
           {validImages.map((image, index) => (
             <div
               key={`${image}-${index}`}
-              className="min-w-full shrink-0 snap-center aspect-[16/10]"
+              className="
+                relative
+                min-w-0
+                w-full
+                max-w-full
+                flex-[0_0_100%]
+                snap-start
+                aspect-[16/10]
+                overflow-hidden
+              "
             >
               <img
                 src={image}
                 alt={`${alt} photo ${index + 1}`}
-                className="h-full w-full select-none object-cover"
+                className="
+                  block
+                  h-full
+                  w-full
+                  max-w-full
+                  select-none
+                  object-cover
+                  object-center
+                "
                 draggable="false"
                 loading={index === 0 ? 'eager' : 'lazy'}
               />
@@ -129,37 +192,69 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
 
         {validImages.length > 1 && (
           <>
+            {/* Previous */}
             <button
               type="button"
               onClick={handlePrevious}
               disabled={activeIndex === 0}
               aria-label="Previous photo"
               className="
-                absolute left-3 top-1/2 z-10
-                flex h-10 w-10 -translate-y-1/2
-                items-center justify-center
-                rounded-full bg-white/90 text-ink-800
-                shadow-lg transition hover:bg-white
-                disabled:pointer-events-none disabled:opacity-35
-                sm:left-4 sm:h-11 sm:w-11
+                absolute
+                left-3
+                top-1/2
+                z-10
+                flex
+                h-9
+                w-9
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                bg-white/90
+                text-ink-800
+                shadow-lg
+                transition
+                hover:bg-white
+                active:scale-95
+                disabled:pointer-events-none
+                disabled:opacity-35
+                sm:left-4
+                sm:h-11
+                sm:w-11
               "
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
 
+            {/* Next */}
             <button
               type="button"
               onClick={handleNext}
               disabled={activeIndex === validImages.length - 1}
               aria-label="Next photo"
               className="
-                absolute right-3 top-1/2 z-10
-                flex h-10 w-10 -translate-y-1/2
-                items-center justify-center
-                rounded-full bg-white/90 text-ink-800
-                shadow-lg transition hover:bg-white
-                disabled:pointer-events-none disabled:opacity-35
-                sm:right-4 sm:h-11 sm:w-11
+                absolute
+                right-3
+                top-1/2
+                z-10
+                flex
+                h-9
+                w-9
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                bg-white/90
+                text-ink-800
+                shadow-lg
+                transition
+                hover:bg-white
+                active:scale-95
+                disabled:pointer-events-none
+                disabled:opacity-35
+                sm:right-4
+                sm:h-11
+                sm:w-11
               "
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -168,6 +263,7 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
         )}
       </div>
 
+      {/* Dots */}
       {validImages.length > 1 && (
         <div className="mt-3 flex items-center justify-center gap-2">
           {validImages.map((_, index) => (
@@ -176,9 +272,13 @@ export function PropertyGallery({ images = [], alt = 'Property' }) {
               type="button"
               onClick={() => goTo(index)}
               aria-label={`Show photo ${index + 1}`}
-              aria-current={activeIndex === index ? 'true' : 'false'}
+              aria-current={
+                activeIndex === index ? 'true' : 'false'
+              }
               className={`
-                rounded-full transition-all duration-200
+                rounded-full
+                transition-all
+                duration-200
                 ${
                   activeIndex === index
                     ? 'h-1.5 w-6 bg-brand-600'

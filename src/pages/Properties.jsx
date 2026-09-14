@@ -487,16 +487,49 @@ export default function Properties() {
       lng: location.lng,
     })
 
-    setSelectedPropertyId(
-      location.propertyId || null,
-    )
-
-    if (location.propertyId) {
-      navigate(
-        `/properties/${location.propertyId}`,
-      )
-    }
+    setSelectedPropertyId(null)
   }
+
+  const handleMapPropertyPopupClick = (propertyId) => {
+    if (!propertyId) {
+      return
+    }
+
+    // Remove only the temporary map-radius filter so the clicked property
+    // can be shown in the existing left-side property list.
+    setMapLocation(null)
+    setSelectedPropertyId(propertyId)
+  }
+
+  useEffect(() => {
+    if (!selectedPropertyId) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      const propertyCard = document.getElementById(
+        `property-card-${selectedPropertyId}`,
+      )
+
+      if (!propertyCard) {
+        return
+      }
+
+      // Position the selected card clearly below the fixed navbar.
+      // This avoids scrollIntoView() centering the page around the card.
+      const navbarOffset = 96
+      const cardTop =
+        propertyCard.getBoundingClientRect().top +
+        window.scrollY
+
+      window.scrollTo({
+        top: Math.max(0, cardTop - navbarOffset),
+        behavior: 'smooth',
+      })
+    }, 300)
+
+    return () => window.clearTimeout(timer)
+  }, [selectedPropertyId])
 
   const handleMapViewport = (location) => {
     setMapLocation({
@@ -861,6 +894,9 @@ export default function Properties() {
               onLocationSelect={
                 handleMapLocation
               }
+              onPropertyPopupClick={
+                handleMapPropertyPopupClick
+              }
               onViewportChange={
                 handleMapViewport
               }
@@ -983,15 +1019,15 @@ export default function Properties() {
                   property,
                   index,
                 ) => (
-                  <PropertyCard
-                    key={
-                      property.id
-                    }
-                    property={
-                      property
-                    }
-                    index={index}
-                  />
+                  <div
+                    key={property.id}
+                    id={`property-card-${property.id}`}
+                  >
+                    <PropertyCard
+                      property={property}
+                      index={index}
+                    />
+                  </div>
                 ),
               )}
 
@@ -1018,6 +1054,9 @@ export default function Properties() {
   }
   onLocationSelect={
     handleMapLocation
+  }
+  onPropertyPopupClick={
+    handleMapPropertyPopupClick
   }
   onViewportChange={
     handleMapViewport

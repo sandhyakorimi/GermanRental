@@ -147,51 +147,6 @@ function propertyMarkerIcon(selected = false) {
   }
 }
 
-function nearbyIcon(type) {
-  const isRestaurant = type === 'restaurant'
-  const background = isRestaurant
-    ? '#E11D48'
-    : '#15803D'
-
-  const symbol = isRestaurant ? 'R' : 'P'
-
-  const svg = `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
-    >
-      <circle
-        cx="16"
-        cy="16"
-        r="14"
-        fill="white"
-        stroke="${background}"
-        stroke-width="3"
-      />
-      <text
-        x="16"
-        y="21"
-        text-anchor="middle"
-        font-family="Arial, sans-serif"
-        font-size="15"
-        font-weight="700"
-        fill="${background}"
-      >
-        ${symbol}
-      </text>
-    </svg>
-  `
-
-  return {
-    url:
-      'data:image/svg+xml;charset=UTF-8,' +
-      encodeURIComponent(svg),
-    scaledSize: new window.google.maps.Size(32, 32),
-    anchor: new window.google.maps.Point(16, 16),
-  }
-}
 
 function getValidProperties(properties) {
   return properties
@@ -222,6 +177,7 @@ function getValidProperties(properties) {
 function GooglePropertyMap({
   properties,
   onLocationSelect,
+  onPropertyPopupClick,
   onViewportChange,
   selectedLocation,
   radiusKm,
@@ -230,7 +186,6 @@ function GooglePropertyMap({
   const mapRef = useRef(null)
 
   const propertyMarkersRef = useRef([])
-  const nearbyMarkersRef = useRef([])
   const infoWindowRef = useRef(null)
   const selectedCircleRef = useRef(null)
 
@@ -242,6 +197,9 @@ function GooglePropertyMap({
   const selectedLocationRef = useRef(
     selectedLocation,
   )
+  const onPropertyPopupClickRef = useRef(
+    onPropertyPopupClick,
+  )
 
   useEffect(() => {
     propertiesRef.current = properties
@@ -251,6 +209,11 @@ function GooglePropertyMap({
     selectedLocationRef.current = selectedLocation
   }, [selectedLocation])
 
+  useEffect(() => {
+    onPropertyPopupClickRef.current =
+      onPropertyPopupClick
+  }, [onPropertyPopupClick])
+
   function clearPropertyMarkers() {
     propertyMarkersRef.current.forEach((marker) => {
       marker.setMap(null)
@@ -259,13 +222,6 @@ function GooglePropertyMap({
     propertyMarkersRef.current = []
   }
 
-  function clearNearbyMarkers() {
-    nearbyMarkersRef.current.forEach((marker) => {
-      marker.setMap(null)
-    })
-
-    nearbyMarkersRef.current = []
-  }
 
   function clearCircle() {
     if (selectedCircleRef.current) {
@@ -274,153 +230,6 @@ function GooglePropertyMap({
     }
   }
 
-  async function searchNearbyPlaces() {
-    const map = mapRef.current
-
-    if (!map || !window.google?.maps) {
-      return
-    }
-
-    const { Place, SearchNearbyRankPreference } =
-      await window.google.maps.importLibrary(
-        'places',
-      )
-
-    const center = map.getCenter()
-
-    if (!center) {
-      return
-    }
-
-    const searches = [
-      {
-        type: 'restaurant',
-        label: 'Restaurants',
-      },
-      {
-        type: 'park',
-        label: 'Parks',
-      },
-    ]
-
-    clearNearbyMarkers()
-
-    for (const search of searches) {
-      try {
-        const request = {
-          fields: [
-            'displayName',
-            'location',
-            'formattedAddress',
-            'googleMapsURI',
-          ],
-          locationRestriction: {
-            center,
-            radius: NEARBY_RADIUS_METERS,
-          },
-          includedPrimaryTypes: [search.type],
-          maxResultCount: 12,
-          rankPreference:
-            SearchNearbyRankPreference.DISTANCE,
-        }
-
-        const response =
-          await Place.searchNearby(request)
-
-        const places = response?.places || []
-
-        places.forEach((place) => {
-          if (!place.location) {
-            return
-          }
-
-          const marker =
-            new window.google.maps.Marker({
-              map,
-              position: place.location,
-              title:
-                place.displayName || search.label,
-              icon: nearbyIcon(search.type),
-              zIndex: 50,
-            })
-
-          marker.addListener('click', () => {
-            if (!infoWindowRef.current) {
-              infoWindowRef.current =
-                new window.google.maps.InfoWindow()
-            }
-
-            const name = escapeSvgText(
-              place.displayName ||
-                search.label,
-            )
-
-            const address = escapeSvgText(
-              place.formattedAddress || '',
-            )
-
-            const mapsLink =
-              place.googleMapsURI
-                ? `
-                  <a
-                    href="${place.googleMapsURI}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style="
-                      display:inline-block;
-                      margin-top:8px;
-                      color:#003B73;
-                      font-weight:600;
-                      text-decoration:none;
-                    "
-                  >
-                    View in Google Maps
-                  </a>
-                `
-                : ''
-
-            infoWindowRef.current.setContent(`
-              <div style="min-width:180px;padding:4px;">
-                <div
-                  style="
-                    font-weight:700;
-                    color:#111827;
-                    margin-bottom:5px;
-                  "
-                >
-                  ${name}
-                </div>
-
-                <div
-                  style="
-                    font-size:12px;
-                    color:#6B7280;
-                    line-height:1.4;
-                  "
-                >
-                  ${address}
-                </div>
-
-                ${mapsLink}
-              </div>
-            `)
-
-            infoWindowRef.current.open({
-              map,
-              anchor: marker,
-            })
-          })
-
-          nearbyMarkersRef.current.push(marker)
-        })
-      } catch (error) {
-        console.error(
-          `Nearby ${search.label} search failed:`,
-          error,
-        )
-      }
-    }
-  }
 
   function fitMapToProperties() {
     const map = mapRef.current
@@ -511,75 +320,631 @@ function GooglePropertyMap({
             lat: property.lat,
             lng: property.lng,
           },
-          icon: propertyMarkerIcon(
-            selectedLocationRef.current
-              ?.propertyId === property.id,
-          ),
+          icon: propertyMarkerIcon(false),
           title: property.title,
           zIndex: 100,
         })
 
       marker.addListener('click', () => {
-        if (onLocationSelect) {
-          onLocationSelect({
-            lat: property.lat,
-            lng: property.lng,
-            propertyId: property.id,
-          })
-        }
-
         if (!infoWindowRef.current) {
           infoWindowRef.current =
             new window.google.maps.InfoWindow()
         }
 
-        infoWindowRef.current.setContent(`
-          <div style="min-width:220px;padding:4px;">
+        const image =
+          property.images?.[0] ||
+          property.image ||
+          ''
+
+        const details = [
+          property.bedrooms != null
+            ? `${escapeSvgText(property.bedrooms)} room${Number(property.bedrooms) === 1 ? '' : 's'}`
+            : '',
+          property.bathrooms != null
+            ? `${escapeSvgText(property.bathrooms)} bath${Number(property.bathrooms) === 1 ? '' : 's'}`
+            : '',
+          property.area != null
+            ? `${escapeSvgText(property.area)} m²`
+            : '',
+        ].filter(Boolean)
+
+        const galleryImages = (
+          property.images?.filter(Boolean) || []
+        )
+
+        if (
+          galleryImages.length === 0 &&
+          (property.image || '')
+        ) {
+          galleryImages.push(property.image)
+        }
+
+        const mapWidth =
+          mapElementRef.current?.clientWidth || 440
+
+        const viewportWidth =
+          window.innerWidth || mapWidth
+
+        // Responsive card width: smaller on phones, capped on desktop,
+        // and always kept inside the actual map viewport.
+        const smallScreen =
+          viewportWidth <= 420 || mapWidth <= 340
+
+        const popupWidth = smallScreen
+          ? Math.max(
+              170,
+              Math.min(
+                220,
+                mapWidth - 44,
+                viewportWidth - 44,
+              ),
+            )
+          : Math.max(
+              190,
+              Math.min(
+                250,
+                mapWidth - 24,
+                viewportWidth - 28,
+              ),
+            )
+
+        // Keep the image proportional to the selected card width.
+        const imageHeight = smallScreen
+          ? Math.max(
+              82,
+              Math.min(
+                102,
+                Math.round(popupWidth * 0.46),
+              ),
+            )
+          : Math.max(
+              90,
+              Math.min(
+                115,
+                Math.round(popupWidth * 0.46),
+              ),
+            )
+
+        // Responsive navigation controls so both arrows remain visible.
+        const arrowSize = Math.max(
+          22,
+          Math.min(
+            30,
+            Math.round(popupWidth * 0.12),
+          ),
+        )
+
+        const controlInset = Math.max(
+          5,
+          Math.min(8, Math.round(popupWidth * 0.025)),
+        )
+
+        const galleryImage =
+          galleryImages[0] || ''
+
+        const hasMultipleImages =
+          galleryImages.length > 1
+
+        const popupElement =
+          document.createElement('div')
+
+        popupElement.className =
+          'german-mitra-property-popup'
+
+        popupElement.style.width =
+          `${popupWidth}px`
+        popupElement.style.maxWidth =
+          `${popupWidth}px`
+        popupElement.style.minWidth =
+          '0'
+        popupElement.style.maxWidth =
+          `${popupWidth}px`
+        popupElement.style.overflow = 'hidden'
+        popupElement.style.boxSizing = 'border-box'
+        popupElement.style.margin = '0'
+        popupElement.style.borderRadius = '8px'
+        popupElement.style.background = '#ffffff'
+        popupElement.style.boxShadow =
+          '0 10px 30px rgba(15,23,42,0.18)'
+        popupElement.style.fontFamily =
+          'Arial,sans-serif'
+
+        popupElement.innerHTML = `
+          ${
+            galleryImage
+              ? `
+                <div
+                  style="
+                    position:relative;
+                    display:block;
+                    width:100%;
+                    max-width:100%;
+                    height:${imageHeight}px;
+                    overflow:hidden;
+                    background:#E5E7EB;
+                    border-radius:0;
+                    box-sizing:border-box;
+                    margin:0;
+                    padding:0;
+                    margin:0;
+                    padding:0;
+                  "
+                >
+                  <img
+                    data-map-gallery-image="true"
+                    src="${escapeSvgText(galleryImage)}"
+                    alt="${escapeSvgText(property.title || 'Property')}"
+                    style="
+                      display:block;
+                      width:100%;
+                      max-width:100%;
+                      height:100%;
+                      margin:0;
+                      padding:0;
+                      object-fit:cover;
+                      cursor:pointer;
+                    "
+                    title="Click to show this property"
+                  />
+
+                  <button
+                    type="button"
+                    data-popup-close="true"
+                    aria-label="Close property preview"
+                    style="
+                      position:absolute;
+                      right:${controlInset}px;
+                      top:${controlInset}px;
+                      z-index:20;
+                      width:${arrowSize}px;
+                      height:${arrowSize}px;
+                      border:0;
+                      border-radius:50%;
+                      background:rgba(17,24,39,.58);
+                      color:#fff;
+                      font-size:${Math.max(17, Math.round(arrowSize * 0.70))}px;
+                      line-height:${arrowSize}px;
+                      padding:0;
+                      cursor:pointer;
+                      display:flex;
+                      align-items:center;
+                      justify-content:center;
+                    "
+                  >×</button>
+
+                  ${
+                    hasMultipleImages
+                      ? `
+                        <button
+                          type="button"
+                          data-gallery-prev="true"
+                          aria-label="Previous photo"
+                          style="
+                            position:absolute;
+                            left:${controlInset}px;
+                            top:50%;
+                            transform:translateY(-50%);
+                            width:${arrowSize}px;
+                            height:${arrowSize}px;
+                            border:0;
+                            border-radius:50%;
+                            background:rgba(17,24,39,.58);
+                            color:#fff;
+                            font-size:${Math.max(18, Math.round(arrowSize * 0.68))}px;
+                            line-height:${arrowSize}px;
+                            cursor:pointer;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                          "
+                        >‹</button>
+
+                        <button
+                          type="button"
+                          data-gallery-next="true"
+                          aria-label="Next photo"
+                          style="
+                            position:absolute;
+                            right:${controlInset}px;
+                            top:50%;
+                            transform:translateY(-50%);
+                            width:${arrowSize}px;
+                            height:${arrowSize}px;
+                            border:0;
+                            border-radius:50%;
+                            background:rgba(17,24,39,.58);
+                            color:#fff;
+                            font-size:${Math.max(18, Math.round(arrowSize * 0.68))}px;
+                            line-height:${arrowSize}px;
+                            cursor:pointer;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                          "
+                        >›</button>
+                      `
+                      : ''
+                  }
+                </div>
+              `
+              : ''
+          }
+
+          <div
+            style="
+              padding:8px 9px 9px;
+              box-sizing:border-box;
+              overflow-x:hidden;
+              overflow-y:auto;
+              scrollbar-width:thin;
+              max-height:160px;
+            "
+          >
             <div
               style="
-                font-weight:700;
+                font-size:16px;
+                line-height:1.1;
+                font-weight:800;
                 color:#111827;
+                margin-bottom:6px;
               "
             >
-              ${escapeSvgText(property.title)}
+              €${escapeSvgText(property.rent ?? '')}
+              <span
+                style="
+                  font-size:12px;
+                  font-weight:500;
+                  color:#6B7280;
+                "
+              >per month</span>
             </div>
 
             <div
               style="
-                margin-top:4px;
-                font-size:13px;
-                color:#4B5563;
+                font-size:14px;
+                line-height:1.18;
+                font-weight:700;
+                color:#111827;
+                margin-bottom:5px;
+                width:100%;
+                max-width:100%;
+                min-width:0;
+                display:-webkit-box;
+                -webkit-line-clamp:2;
+                -webkit-box-orient:vertical;
+                overflow:hidden;
+                overflow-wrap:anywhere;
+                word-break:break-word;
+              "
+            >
+              ${escapeSvgText(property.title || 'Property')}
+            </div>
+
+            <div
+              style="
+                font-size:11px;
+                line-height:1.3;
+                color:#6B7280;
+                margin-bottom:9px;
+                white-space:nowrap;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                max-width:100%;
               "
             >
               ${escapeSvgText(
-                `${property.district}, ${property.city}`,
+                [property.district, property.city]
+                  .filter(Boolean)
+                  .join(', '),
               )}
             </div>
 
-            <div
-              style="
-                margin-top:8px;
-                font-weight:700;
-                color:#003B73;
-              "
-            >
-              €${escapeSvgText(property.rent)}
-              <span
-                style="
-                  font-weight:400;
-                  color:#6B7280;
-                "
-              >
-                /month
-              </span>
-            </div>
+            ${
+              details.length
+                ? `
+                  <div
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:7px;
+                      flex-wrap:wrap;
+                      font-size:11px;
+                      line-height:1.25;
+                      width:100%;
+                      max-width:100%;
+                      color:#4B5563;
+                    "
+                  >
+                    ${details
+                      .map(
+                        (detail, detailIndex) => `
+                          ${
+                            detailIndex > 0
+                              ? '<span style="color:#9CA3AF;">•</span>'
+                              : ''
+                          }
+                          <span
+                            style="white-space:nowrap;"
+                          >${detail}</span>
+                        `,
+                      )
+                      .join('')}
+                  </div>
+                `
+                : ''
+            }
           </div>
-        `)
+        `
+
+        const imageElement =
+          popupElement.querySelector(
+            '[data-map-gallery-image="true"]',
+          )
+
+        const previousButton =
+          popupElement.querySelector(
+            '[data-gallery-prev="true"]',
+          )
+
+        const nextButton =
+          popupElement.querySelector(
+            '[data-gallery-next="true"]',
+          )
+
+        const closeButton =
+          popupElement.querySelector(
+            '[data-popup-close="true"]',
+          )
+
+        let imageIndex = 0
+
+        const updateGalleryImage = () => {
+          if (!imageElement || !galleryImages.length) {
+            return
+          }
+
+          imageElement.src =
+            galleryImages[imageIndex]
+        }
+
+        if (imageElement) {
+          imageElement.addEventListener(
+            'click',
+            (event) => {
+              event.preventDefault()
+              event.stopPropagation()
+
+              if (
+                onPropertyPopupClickRef.current
+              ) {
+                onPropertyPopupClickRef.current(
+                  property.id,
+                )
+              }
+            },
+          )
+        }
+
+        if (closeButton) {
+          closeButton.addEventListener(
+            'click',
+            (event) => {
+              event.preventDefault()
+              event.stopPropagation()
+
+              infoWindowRef.current?.close()
+            },
+          )
+        }
+
+        if (previousButton) {
+          previousButton.addEventListener(
+            'click',
+            (event) => {
+              event.preventDefault()
+              event.stopPropagation()
+
+              imageIndex =
+                (imageIndex -
+                  1 +
+                  galleryImages.length) %
+                galleryImages.length
+
+              updateGalleryImage()
+            },
+          )
+        }
+
+        if (nextButton) {
+          nextButton.addEventListener(
+            'click',
+            (event) => {
+              event.preventDefault()
+              event.stopPropagation()
+
+              imageIndex =
+                (imageIndex + 1) %
+                galleryImages.length
+
+              updateGalleryImage()
+            },
+          )
+        }
+
+        infoWindowRef.current.setContent(popupElement)
+
+        infoWindowRef.current.setOptions({
+          maxWidth: popupWidth,
+        })
 
         infoWindowRef.current.open({
           map,
           anchor: marker,
         })
+
+        window.google.maps.event.addListenerOnce(
+          infoWindowRef.current,
+          'domready',
+          () => {
+            const infoWindows =
+              document.querySelectorAll(
+                '.gm-style-iw, .gm-style-iw-c, .gm-style-iw-d',
+              )
+
+            infoWindows.forEach((element) => {
+              element.style.setProperty(
+                'overflow',
+                'hidden',
+                'important',
+              )
+              element.style.setProperty(
+                'overflow-x',
+                'hidden',
+                'important',
+              )
+              element.style.setProperty(
+                'overflow-y',
+                'hidden',
+                'important',
+              )
+              element.style.setProperty(
+                'padding',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'margin',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'max-height',
+                'none',
+                'important',
+              )
+              element.style.setProperty(
+                'max-width',
+                `${popupWidth}px`,
+                'important',
+              )
+              element.style.setProperty(
+                'width',
+                `${popupWidth}px`,
+                'important',
+              )
+              element.style.setProperty(
+                'max-width',
+                `${popupWidth}px`,
+                'important',
+              )
+              element.style.setProperty(
+                'min-width',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'height',
+                'auto',
+                'important',
+              )
+              element.style.setProperty(
+                'padding',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'margin',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'box-sizing',
+                'border-box',
+                'important',
+              )
+              element.style.setProperty(
+                'padding',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'margin',
+                '0',
+                'important',
+              )
+              element.style.setProperty(
+                'box-sizing',
+                'border-box',
+                'important',
+              )
+            })
+
+            document
+              .querySelectorAll('.gm-ui-hover-effect')
+              .forEach((button) => {
+                button.style.display = 'none'
+              })
+
+            document
+              .querySelectorAll('.gm-style-iw-ch, .gm-style-iw-chr')
+              .forEach((element) => {
+                element.style.setProperty(
+                  'padding',
+                  '0',
+                  'important',
+                )
+                element.style.setProperty(
+                  'margin',
+                  '0',
+                  'important',
+                )
+                element.style.setProperty(
+                  'height',
+                  '0',
+                  'important',
+                )
+                element.style.setProperty(
+                  'min-height',
+                  '0',
+                  'important',
+                )
+                element.style.setProperty(
+                  'max-height',
+                  '0',
+                  'important',
+                )
+                element.style.setProperty(
+                  'overflow',
+                  'hidden',
+                  'important',
+                )
+              })
+
+            const bubble =
+              document.querySelector(
+                '.german-mitra-property-popup',
+              )
+
+            if (bubble) {
+              bubble.style.setProperty(
+                'width',
+                `${popupWidth}px`,
+                'important',
+              )
+              bubble.style.setProperty(
+                'max-width',
+                `${popupWidth}px`,
+                'important',
+              )
+              bubble.style.setProperty(
+                'overflow',
+                'hidden',
+                'important',
+              )
+              bubble.style.margin = '0'
+            }
+          },
+        )
       })
 
       propertyMarkersRef.current.push(marker)
@@ -645,6 +1010,7 @@ function GooglePropertyMap({
               fullscreenControl: true,
               zoomControl: true,
               gestureHandling: 'greedy',
+              clickableIcons: false,
             },
           )
 
@@ -697,7 +1063,6 @@ function GooglePropertyMap({
               })
             }
 
-            searchNearbyPlaces()
           }
 
           if (!initialFitDoneRef.current) {
@@ -708,8 +1073,7 @@ function GooglePropertyMap({
             renderSelectedCircle()
 
             window.setTimeout(() => {
-              searchNearbyPlaces()
-            }, 300)
+              }, 300)
           }
         })
 
@@ -738,7 +1102,6 @@ function GooglePropertyMap({
       cancelled = true
 
       clearPropertyMarkers()
-      clearNearbyMarkers()
       clearCircle()
 
       mapRef.current = null
@@ -769,6 +1132,7 @@ function GooglePropertyMap({
 export function PropertyMap({
   properties = [],
   onLocationSelect,
+  onPropertyPopupClick,
   onViewportChange,
   selectedLocation,
   radiusKm = 2,
@@ -783,6 +1147,7 @@ export function PropertyMap({
       <GooglePropertyMap
         properties={properties}
         onLocationSelect={onLocationSelect}
+        onPropertyPopupClick={onPropertyPopupClick}
         onViewportChange={onViewportChange}
         selectedLocation={selectedLocation}
         radiusKm={radiusKm}
